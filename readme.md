@@ -1,19 +1,21 @@
 ## Skeleton for Node.js applications written in TypeScript
 
-### Development
+### Generate backend before running
+```bash
+npm run generate
+```
 
+### Development
 ```bash
 npm run dev
 ```
 
 ### Running tests
-
 ```bash
 npm test
 ```
 
 ### Linting
-
 ```bash
 npm run lint
 ```
