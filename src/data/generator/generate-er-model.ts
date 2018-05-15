@@ -95,7 +95,7 @@ ${generateOneToManyDeclarations(oneToManyRelations)}
     ${generateDestructureStatement(manyToOneRelations)}
     assign(this, data);
 
-${manyToOneRelations.map(generateToOneInitialization).join('\\n\\n')}
+${manyToOneRelations.map(generateToOneInitialization).join('\n\n')}
   }
 }
 `);
