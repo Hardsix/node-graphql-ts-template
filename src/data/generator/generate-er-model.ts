@@ -24,7 +24,7 @@ export function generateManyToOneDeclarations(relations: Array<SingleErRelation>
   return relations.map((r) =>
 `  @ManyToOne((type) => ${r.otherTypeName}, (${lowerFirst(r.otherTypeName)}) => ${lowerFirst(r.otherTypeName)}.${r.otherName})
   @Field((returns) => ${r.otherTypeName})
-  public owner: Promise<${r.otherTypeName}>;`).join('\n\n');
+  public ${r.myName}: Promise<${r.otherTypeName}>;`).join('\n\n');
 }
 
 export function generateTypesImports(types: Array<string>) {
