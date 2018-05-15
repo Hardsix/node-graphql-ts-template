@@ -1,0 +1,41 @@
+{
+  "extends": "@infinumjs/tslint-config/react.json",
+  "rules": {
+    "no-reserved-keywords": false,
+    "react-this-binding-issue": false,
+    "'no-void-expression": false,
+    "linebreak-style": false,
+    "no-single-line-block-comment": false,
+    "no-require-imports": false,
+    "import-name": false,
+    "no-implicit-dependencies": false,
+    "no-submodule-imports": false,
+    "valid-typeof": false,
+    "no-var-self": false,
+    "no-stateless-class": false,
+    "no-empty-interfaces": false,
+    "no-duplicate-case": false,
+    "use-default-type-parameter": false,
+    "no-void-expression": false,
+    "await-promise": false,
+    "match-default-export-name": false,
+    "no-floating-promises": false,
+    "no-for-in-array": false,
+    "no-unsafe-any": false,
+    "promise-function-async": false,
+    "restrict-plus-operands": false,
+    "completed-docs": false,
+    "no-unnecessary-qualifier": false,
+    "no-unnecessary-type-assertion": false,
+    "strict-boolean-expressions": false,
+    "react-a11y-image-button-has-alt": false,
+    "export-name": false,
+    "no-useless-files": false,
+    "no-string-based-set-timeout": false
+  },
+  "linterOptions": {
+    "exclude": [
+      "src/facebook-integration/models/*"
+    ]
+  }
+}

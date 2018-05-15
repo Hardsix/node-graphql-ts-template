@@ -1,0 +1,14 @@
+User:
+  x password
+  + passwordHash
+  - email
+  - facebookUserId
+  - userAccessToken
+
+FacebookPage:
+  - pageAccessToken
+  - pageId: number bigint
+  - name
+
+User has many FacebookPage as facebookPages
+FacebookPage has one User as owner
