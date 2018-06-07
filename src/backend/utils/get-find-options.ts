@@ -1,6 +1,6 @@
 import * as getFieldNames from 'graphql-list-fields';
 import { intersection, takeWhile } from 'lodash';
-import { getRepository } from 'typeorm';
+import { FindManyOptions, getRepository } from 'typeorm';
 
 const beforeDot = (x: string) => takeWhile(x, (ch) => ch !== '.').join('');
 
@@ -11,8 +11,13 @@ export function getRelations(EntityType, queryInfo): Array<string> {
   return intersection(propertyNames, fields.map(beforeDot));
 }
 
-export function getFindOptions(EntityType, info, context = {}) {
+export function getFindOptions(EntityType, info, context = {}): any {
   const relations = getRelations(EntityType, info);
 
-  return { relations };
+  return {
+    order: {
+      id: 'ASC',
+    },
+    relations,
+  };
 }
