@@ -28,6 +28,7 @@
     "no-unnecessary-qualifier": false,
     "no-unnecessary-type-assertion": false,
     "strict-boolean-expressions": false,
+    "no-unnecessary-class": false,
     "react-a11y-image-button-has-alt": false,
     "export-name": false,
     "no-useless-files": false,

@@ -1,6 +1,7 @@
 // tslint:disable max-line-length
-import { lowerFirst, sortedUniq } from 'lodash';
+import { kebabCase, lowerFirst, sortedUniq } from 'lodash';
 import { FieldDefinition, SingleErModel, SingleErRelation } from './parse-er-model';
+
 export function generateTypeImport(type: string) {
   return `import { ${type} } from './${type}';`;
 }
@@ -47,7 +48,7 @@ export function generateToOneInitialization(relation: SingleErRelation) {
   const fieldName = getFieldName(relation);
 
   return (
-`    this.${relation.myName} = Promise.resolve(await em.getRepository(${relation.otherTypeName}).findOneOrFail(${fieldName}));`
+`    this.${relation.myName} = Promise.resolve(await context.em.getRepository(${relation.otherTypeName}).findOneOrFail(${fieldName}));`
   );
 }
 
@@ -71,12 +72,14 @@ export function generateSingleModel(model: SingleErModel) {
 
   return (
 `import { Field, ID, ObjectType } from 'type-graphql';
-import { Column, Entity, EntityManager, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { assign } from 'lodash';
 
 ${generateTypesImports(types)}
 import { ${name}Base } from '../base/${name}Base';
 import { ${name}CreateInput } from '../inputs/${name}CreateInput';
+import { IRequestContext } from '../IRequestContext';
+import { update${name}Model } from '../services/${kebabCase(name)}-services';
 
 @Entity()
 @ObjectType()
@@ -91,11 +94,12 @@ ${generateManyToOneDeclarations(manyToOneRelations)}
 
 ${generateOneToManyDeclarations(oneToManyRelations)}
 
-  public async update(input: ${name}CreateInput, em: EntityManager) {
+  public async update(input: ${name}CreateInput, context: IRequestContext) {
     ${generateDestructureStatement(manyToOneRelations)}
     assign(this, data);
 
 ${manyToOneRelations.map(generateToOneInitialization).join('\n\n')}
+    await update${name}Model(this, input, context);
   }
 }
 `);

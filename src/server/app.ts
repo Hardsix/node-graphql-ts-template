@@ -1,9 +1,9 @@
 // tslint:disable no-console
 
 import { GraphQLServer, Options } from 'graphql-yoga';
+import * as path from 'path';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
-import * as path from 'path';
 
 async function bootstrap() {
   const schema = await buildSchema({
