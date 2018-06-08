@@ -8,7 +8,8 @@
     "start": "nodemon",
     "proxy": "lt -p 5000",
     "deploy-staging": "git push heroku master",
-    "generate": "ts-node src/backend/data/generator && npm run lint -- --fix"
+    "generate": "ts-node src/backend/data/generator && npm run lint -- --fix",
+    "codegen": "apollo-codegen generate src/**/**/*.ts*  --schema graphql.schema.json --target typescript --output src/shared/graphql/types.ts"
   },
   "keywords": [],
   "author": "",
@@ -44,6 +45,7 @@
     "tslint": "^5.8.0",
     "tslint-microsoft-contrib": "^5.0.1",
     "localtunnel": "^1.9.0",
-    "nodemon": "1.11.0"
+    "nodemon": "1.11.0",
+    "apollo-codegen": "^0.19.1"
   }
 }
