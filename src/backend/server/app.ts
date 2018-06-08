@@ -1,14 +1,18 @@
 // tslint:disable no-console
-
 import { GraphQLServer, Options } from 'graphql-yoga';
 import * as path from 'path';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
 
+import { createGraphqlFile, createSchemaJsonFile } from './server-helpers';
+
 async function bootstrap() {
   const schema = await buildSchema({
     resolvers: [path.join(__dirname, '..', 'data', 'resolvers', '*.ts')],
   });
+
+  createGraphqlFile(schema);
+  await createSchemaJsonFile(schema);
 
   const server = new GraphQLServer({ schema });
   const port = process.env.PORT || 5000;
