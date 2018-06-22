@@ -1,6 +1,8 @@
 //tslint:disable
 import { drop, flatten, includes } from 'lodash';
 
+import { IFieldDefinition, IModelDefinition, IRelationComponent, ISingleErModel, ISingleErRelation } from './model-types';
+
 const trim = (x: string) => x.trim();
 const remove = (str: string) => (x) => x.replace(str, '');
 
@@ -12,23 +14,13 @@ function getDefinitionLines(definition: Array<string>) {
   return drop(definition, 1).map((d) => d.split(' ').map(remove(':')).map(trim));
 }
 
-export interface FieldDefinition {
-  name: string;
-  type: string;
-  visibility: string;
-  dbType: string | undefined;
+function getFieldDefinition([visibility, name, type, dbType]: Array<string>): IFieldDefinition {
+  const optional = name.endsWith('?');
+
+  return { visibility, type: type || 'string', dbType, optional, name: name.replace('?', '') };
 }
 
-function getFieldDefinition([visibility, name, type, dbType]: Array<string>): FieldDefinition {
-  return { name, visibility, type: type || 'string', dbType };
-}
-
-interface ModelDefinition {
-  name: string;
-  fields: Array<FieldDefinition>;
-}
-
-function getModel(modelLines: Array<string>): ModelDefinition {
+function getModel(modelLines: Array<string>): IModelDefinition {
   const name = getDefinitionName(modelLines);
   const fields = getDefinitionLines(modelLines).map(getFieldDefinition);
 
@@ -53,23 +45,18 @@ function getPartType(relationPart: string) {
   throw new Error(`invalid relation part ${relationPart}`);
 }
 
-export interface RelationComponent {
-  source: string;
-  target: string;
-  as: string;
-  type: string;
-}
-
-function getRelationPart(relationPart: string): RelationComponent {
+function getRelationPart(relationPart: string): IRelationComponent {
   const [ source, target, as ] = getPartComponents(relationPart);
   const type = getPartType(relationPart);
 
-  return { source, target, as, type };
+  const optional = as.endsWith('?');
+
+  return { source, target, type, optional, as: as.replace('?', '') };
 }
 
 export interface RelationDefinition {
-  first: RelationComponent;
-  second: RelationComponent;
+  first: IRelationComponent;
+  second: IRelationComponent;
 }
 
 function getRelation(relation: string): RelationDefinition {
@@ -77,42 +64,25 @@ function getRelation(relation: string): RelationDefinition {
   return { first, second };
 }
 
-export interface ErModel {
-  models: Array<ModelDefinition>;
-  relations: Array<RelationDefinition>;
-}
-
-export interface SingleErRelation {
-  otherTypeName: string;
-  otherName: string;
-  myTypeName: string;
-  myName: string;
-  relationType: string;
-}
-
-export interface SingleErModel {
-  name: string;
-  fields: Array<FieldDefinition>;
-  relations: Array<SingleErRelation>;
-}
-
-function convertToSingleRelations(relationDefinition: RelationDefinition): Array<SingleErRelation> {
+function convertToSingleRelations(relationDefinition: RelationDefinition): Array<ISingleErRelation> {
   const { first, second } = relationDefinition;
 
-  const firstRelation: SingleErRelation = {
+  const firstRelation: ISingleErRelation = {
     myName: first.as,
     myTypeName: first.source,
     otherName: second.as,
     otherTypeName: first.target,
     relationType: first.type,
+    optional: first.optional,
   };
 
-  const secondRelation: SingleErRelation = {
+  const secondRelation: ISingleErRelation = {
     myName: second.as,
     myTypeName: second.source,
     otherName: first.as,
     otherTypeName: second.target,
     relationType: second.type,
+    optional: second.optional,
   };
 
   return [firstRelation, secondRelation];
@@ -129,7 +99,7 @@ export function parseErModel(data: string) {
   const relationsDefinitions = relationsLines.map(getRelation);
   const singleRelations = flatten(relationsDefinitions.map(convertToSingleRelations));
 
-  const singleModels = modelsDefinitions.map((modelDefinition): SingleErModel => {
+  const singleModels = modelsDefinitions.map((modelDefinition): ISingleErModel => {
     const modelSingleRelations = singleRelations.filter((r) => r.myTypeName === modelDefinition.name);
     return {
       name: modelDefinition.name,

@@ -1,6 +1,6 @@
-import { SingleErModel } from './parse-er-model';
+import { ISingleErModel } from './model-types';
 
-export function generateModelServices(model: SingleErModel) {
+export function generateModelServices(model: ISingleErModel) {
   const { name } = model;
 
   return (

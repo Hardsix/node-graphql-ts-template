@@ -1,15 +1,47 @@
-import { FieldDefinition, SingleErModel } from './parse-er-model';
+import { upperFirst } from 'lodash';
 
-function generateField(field: FieldDefinition) {
-  const columnArgs = field.dbType === undefined ? '' : `{ type: '${field.dbType}' }`;
+import { stringifyClean } from '../../utils/stringify-clean';
+import { IFieldDefinition, ISingleErModel } from './model-types';
+
+export function generateFieldDeco(field: IFieldDefinition) {
+  const columnArgs = stringifyClean({
+    nullable: field.optional || undefined,
+  });
+
+  const type = field.type === 'EntityId' ? 'ID' : upperFirst(field.type);
+
+  return `@Field(() => ${type}, ${columnArgs})`;
+}
+
+export function getTsTypeName(field: IFieldDefinition) {
+  if (field.optional) {
+    return `${field.type} | null`;
+  }
+
+  return field.type;
+}
+
+export function getFieldName(field: IFieldDefinition) {
+  if (field.optional) {
+    return `${field.name}?`;
+  }
+
+  return field.name;
+}
+
+export function generateField(field: IFieldDefinition) {
+  const columnArgs = stringifyClean({
+    nullable: field.optional || undefined,
+    type: field.dbType,
+  });
 
   return (
 `  @Column(${columnArgs})
-  @Field()
-  public ${field.name}: ${field.type};`);
+  ${generateFieldDeco(field)}
+  public ${getFieldName(field)}: ${getTsTypeName(field)};`);
 }
 
-export function generateBase(model: SingleErModel) {
+export function generateBase(model: ISingleErModel) {
   const baseFields = model.fields.filter((f) => f.visibility === '-');
 
   return (

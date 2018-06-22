@@ -1,6 +1,6 @@
-import { SingleErModel } from './parse-er-model';
+import { ISingleErModel } from './model-types';
 
-export function generateResolver(model: SingleErModel) {
+export function generateResolver(model: ISingleErModel) {
   return (
 `import { Resolver } from 'type-graphql';
 

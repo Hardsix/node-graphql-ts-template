@@ -8,7 +8,13 @@ User:
 FacebookPage:
   - pageAccessToken
   - pageId: number bigint
-  - name
+  - name?: string varchar
 
 User has many FacebookPage as facebookPages
 FacebookPage has one User as owner
+
+Post:
+  - content
+
+User has many Post as posts
+Post has one User as author?
