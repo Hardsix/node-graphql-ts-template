@@ -1,40 +1,30 @@
 type FacebookPage {
-  pageAccessToken: String!
-  pageId: Float!
-  name: String
   id: ID!
-  owner: User!
-}
-
-type FacebookPageBase {
   pageAccessToken: String!
   pageId: Float!
   name: String
+  owner: User!
 }
 
 type Mutation {
   createFacebookPage(pageAccessToken: String!, pageId: Float!, name: String, ownerId: ID!): FacebookPage!
-  updateFacebookPage(pageAccessToken: String!, pageId: Float!, name: String, ownerId: ID!, id: ID!): FacebookPage!
+  updateFacebookPage(pageAccessToken: String, pageId: Float, name: String, ownerId: ID, id: ID!): FacebookPage!
   deleteFacebookPage(id: ID!): Boolean!
   deleteFacebookPages(ids: [ID!]!): Boolean!
   createPost(content: String!, authorId: ID): Post!
-  updatePost(content: String!, authorId: ID, id: ID!): Post!
+  updatePost(content: String, authorId: ID, id: ID!): Post!
   deletePost(id: ID!): Boolean!
   deletePosts(ids: [ID!]!): Boolean!
-  createUser(email: String!, facebookUserId: String!, userAccessToken: String!, password: String!): User!
-  updateUser(email: String!, facebookUserId: String!, userAccessToken: String!, password: String!, id: ID!): User!
+  createUser(password: String!, email: String!, type: UserType!): User!
+  updateUser(password: String, email: String, type: UserType, id: ID!): User!
   deleteUser(id: ID!): Boolean!
   deleteUsers(ids: [ID!]!): Boolean!
 }
 
 type Post {
-  content: String!
   id: ID!
-  author: User
-}
-
-type PostBase {
   content: String!
+  author: User
 }
 
 type Query {
@@ -47,17 +37,15 @@ type Query {
 }
 
 type User {
-  email: String!
-  facebookUserId: String!
-  userAccessToken: String!
   id: ID!
-  passwordHash: String!
+  email: String!
+  type: UserType!
   facebookPages: [FacebookPage!]!
   posts: [Post!]!
 }
 
-type UserBase {
-  email: String!
-  facebookUserId: String!
-  userAccessToken: String!
+enum UserType {
+  StandardUser
+  SuperAdmin
+  Admin
 }

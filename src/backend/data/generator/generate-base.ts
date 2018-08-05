@@ -1,24 +1,32 @@
 import { upperFirst } from 'lodash';
-
 import { stringifyClean } from '../../utils/stringify-clean';
-import { IFieldDefinition, ISingleErModel } from './model-types';
+import { getEnumName, IFieldDefinition, IModelDefinition, isEnum, ISingleErModel } from './model-types';
 
 export function generateFieldDeco(field: IFieldDefinition) {
+  if (field.visibility === '+') {
+    return '';
+  }
+
   const columnArgs = stringifyClean({
     nullable: field.optional || undefined,
   });
 
-  const type = field.type === 'EntityId' ? 'ID' : upperFirst(field.type);
+  const type
+    = field.type === 'EntityId' ? 'ID'
+    : isEnum(field)             ? getEnumName(field)
+                                : upperFirst(field.type);
 
   return `@Field(() => ${type}, ${columnArgs})`;
 }
 
 export function getTsTypeName(field: IFieldDefinition) {
+  const type = isEnum(field) ? getEnumName(field) : field.type;
+
   if (field.optional) {
-    return `${field.type} | null`;
+    return `${type} | null`;
   }
 
-  return field.type;
+  return type;
 }
 
 export function getFieldName(field: IFieldDefinition) {
@@ -29,15 +37,23 @@ export function getFieldName(field: IFieldDefinition) {
   return field.name;
 }
 
+export function generateEnumsImports(fields: Array<IFieldDefinition>) {
+  return fields
+    .filter(isEnum)
+    .map((field) => `import { ${getEnumName(field)} } from '../enums/${getEnumName(field)}';`)
+    .join('\n');
+}
+
 export function generateField(field: IFieldDefinition) {
   const columnArgs = stringifyClean({
     nullable: field.optional || undefined,
     type: field.dbType,
-  });
+    enum: isEnum(field) ? getEnumName(field) : undefined,
+  }, ['enum']);
 
   return (
-`  @Column(${columnArgs})
-  ${generateFieldDeco(field)}
+`  ${generateFieldDeco(field)}
+  @Column(${columnArgs})
   public ${getFieldName(field)}: ${getTsTypeName(field)};`);
 }
 
@@ -48,10 +64,18 @@ export function generateBase(model: ISingleErModel) {
 `import { ArgsType, Field, ObjectType } from 'type-graphql';
 import { Column } from 'typeorm';
 
+${generateEnumsImports(model.fields.filter((f) => f.visibility === '-'))}
+
+// <keep-imports>
+// </keep-imports>
+
 @ArgsType()
 @ObjectType()
 export class ${model.name}Base {
 ${baseFields.map(generateField).join('\n\n')}
+
+  // <keep-methods>
+  // </keep-methods>
 }
 `);
 }

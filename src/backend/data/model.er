@@ -2,8 +2,7 @@ User:
   x password
   + passwordHash
   - email
-  - facebookUserId
-  - userAccessToken
+  - type: StandardUser|SuperAdmin|Admin
 
 FacebookPage:
   - pageAccessToken

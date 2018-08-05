@@ -1,4 +1,5 @@
-import { generateFieldDeco, getFieldName, getTsTypeName } from './generate-base';
+import { identity, upperFirst } from 'lodash';
+import { generateEnumsImports, generateFieldDeco, getFieldName, getTsTypeName } from './generate-base';
 import { IFieldDefinition, ISingleErModel } from './model-types';
 
 function generateField(field: IFieldDefinition) {
@@ -7,9 +8,19 @@ function generateField(field: IFieldDefinition) {
   public ${getFieldName(field)}: ${getTsTypeName(field)};`);
 }
 
-export function generateInput(model: ISingleErModel) {
+function makeOptional(field: IFieldDefinition): IFieldDefinition {
+  return {
+    ...field,
+    optional: true,
+  };
+}
+
+export function generateInput(model: ISingleErModel, type: 'edit' | 'create') {
   const name = model.name;
-  const inputFields = model.fields.filter((f) => f.visibility === 'x');
+
+  const transform = type === 'edit' ? makeOptional : identity;
+
+  const inputFields = model.fields.filter((f) => f.visibility !== '+').map(transform);
   const manyToOneRelations = model.relations.filter((r) => r.relationType === 'one');
   const manyToOneFields = manyToOneRelations.map((r): IFieldDefinition => ({
     dbType: undefined,
@@ -17,19 +28,26 @@ export function generateInput(model: ISingleErModel) {
     optional: r.optional,
     type: 'EntityId',
     visibility: '',
-  }));
+    modelName: name,
+  })).map(transform);
 
   const allInputFields = [...inputFields, ...manyToOneFields];
 
   return (
 `import { ArgsType, Field, ID } from 'type-graphql';
 
-import { ${name}Base } from '../base/${name}Base';
 import { EntityId } from '../EntityId';
+${generateEnumsImports(model.fields)}
+
+// <keep-imports>
+// </keep-imports>
 
 @ArgsType()
-export class ${name}CreateInput extends ${name}Base {
+export class ${name}${upperFirst(type)}Input {
 ${allInputFields.map(generateField).join('\n\n')}
+
+  // <keep-methods>
+  // </keep-methods>
 }
 `);
 }

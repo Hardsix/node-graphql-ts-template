@@ -6,18 +6,12 @@ import { EntityId } from '../EntityId';
 // </keep-imports>
 
 @ArgsType()
-export class FacebookPageCreateInput {
-  @Field(() => String)
-  public pageAccessToken: string;
-
-  @Field(() => Number)
-  public pageId: number;
-
+export class PostEditInput {
   @Field(() => String, { nullable: true })
-  public name?: string | null;
+  public content?: string | null;
 
-  @Field(() => ID)
-  public ownerId: EntityId;
+  @Field(() => ID, { nullable: true })
+  public authorId?: EntityId | null;
 
   // <keep-methods>
   // </keep-methods>

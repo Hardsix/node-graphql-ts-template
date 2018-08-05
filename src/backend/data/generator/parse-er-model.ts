@@ -1,7 +1,11 @@
-//tslint:disable
 import { drop, flatten, includes } from 'lodash';
-
-import { IFieldDefinition, IModelDefinition, IRelationComponent, ISingleErModel, ISingleErRelation } from './model-types';
+import {
+  IFieldDefinition,
+  IModelDefinition,
+  IRelationComponent,
+  ISingleErModel,
+  ISingleErRelation,
+} from './model-types';
 
 const trim = (x: string) => x.trim();
 const remove = (str: string) => (x) => x.replace(str, '');
@@ -17,7 +21,7 @@ function getDefinitionLines(definition: Array<string>) {
 function getFieldDefinition([visibility, name, type, dbType]: Array<string>): IFieldDefinition {
   const optional = name.endsWith('?');
 
-  return { visibility, type: type || 'string', dbType, optional, name: name.replace('?', '') };
+  return { visibility, type: type || 'string', dbType, optional, name: name.replace('?', ''), modelName: '' };
 }
 
 function getModel(modelLines: Array<string>): IModelDefinition {
@@ -54,17 +58,18 @@ function getRelationPart(relationPart: string): IRelationComponent {
   return { source, target, type, optional, as: as.replace('?', '') };
 }
 
-export interface RelationDefinition {
+export interface IRelationDefinition {
   first: IRelationComponent;
   second: IRelationComponent;
 }
 
-function getRelation(relation: string): RelationDefinition {
+function getRelation(relation: string): IRelationDefinition {
   const [first, second] = getRelationParts(relation).map(getRelationPart);
+
   return { first, second };
 }
 
-function convertToSingleRelations(relationDefinition: RelationDefinition): Array<ISingleErRelation> {
+function convertToSingleRelations(relationDefinition: IRelationDefinition): Array<ISingleErRelation> {
   const { first, second } = relationDefinition;
 
   const firstRelation: ISingleErRelation = {
@@ -99,14 +104,13 @@ export function parseErModel(data: string) {
   const relationsDefinitions = relationsLines.map(getRelation);
   const singleRelations = flatten(relationsDefinitions.map(convertToSingleRelations));
 
-  const singleModels = modelsDefinitions.map((modelDefinition): ISingleErModel => {
+  return modelsDefinitions.map((modelDefinition): ISingleErModel => {
     const modelSingleRelations = singleRelations.filter((r) => r.myTypeName === modelDefinition.name);
+
     return {
       name: modelDefinition.name,
-      fields: modelDefinition.fields,
+      fields: modelDefinition.fields.map((field) => ({ ...field, modelName: modelDefinition.name })),
       relations: modelSingleRelations,
     };
   });
-
-  return singleModels;
 }

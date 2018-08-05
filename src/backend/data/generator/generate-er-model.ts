@@ -2,8 +2,8 @@
 import { kebabCase, lowerFirst, sortedUniq } from 'lodash';
 
 import { asLastArgument, stringifyClean } from '../../utils/stringify-clean';
-import { generateField } from './generate-base';
-import { ISingleErModel, ISingleErRelation } from './model-types';
+import { generateEnumsImports, generateField } from './generate-base';
+import { getEnumName, isEnum, ISingleErModel, ISingleErRelation } from './model-types';
 
 export function generateTypeImport(type: string) {
   return `import { ${type} } from './${type}';`;
@@ -72,7 +72,9 @@ export function generateToOneInitialization(relation: ISingleErRelation) {
   const fieldName = getFieldName(relation);
 
   return (
-`    this.${relation.myName} = Promise.resolve(await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}));`
+`    if (${fieldName}) {
+      this.${relation.myName} = Promise.resolve(await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}));
+    }`
   );
 }
 
@@ -85,7 +87,7 @@ export function generateNullableToOneInitialization(relation: ISingleErRelation)
 
   return (
 `    if (${fieldName} !== undefined) {
-      this.${relation.myName} = Promise.resolve(${fieldName} ? await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}) : null);
+      this.${relation.myName} = Promise.resolve(${fieldName} === null ? null : await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}));
     }
 `
   );
@@ -107,41 +109,49 @@ export function generateSingleModel(model: ISingleErModel) {
   const oneToManyRelations = model.relations.filter((r) => r.relationType === 'many');
   const manyToOneRelations = model.relations.filter((r) => r.relationType === 'one');
 
-  const dbOnlyFields = model.fields.filter((f) => f.visibility === '+');
+  const dbFields = model.fields.filter((f) => f.visibility === '+' || f.visibility === '-');
 
   return (
-`// tslint:disable max-line-length
+`// tslint:disable max-line-length no-duplicate-imports
 import { Field, ID, ObjectType } from 'type-graphql';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { assign } from 'lodash';
 
 ${generateTypesImports(types)}
-import { ${name}Base } from '../base/${name}Base';
+${generateEnumsImports(model.fields)}
 import { ${name}CreateInput } from '../inputs/${name}CreateInput';
+import { ${name}EditInput } from '../inputs/${name}EditInput';
 import { IRequestContext } from '../IRequestContext';
-import { update${name}Model } from '../services/${kebabCase(name)}-services';
 import { EntityId } from '../EntityId';
+
+// <keep-imports>
+// </keep-imports>
 
 @Entity()
 @ObjectType()
-export class ${name} extends ${name}Base {
+export class ${name} {
   @Field((type) => ID)
   @PrimaryGeneratedColumn()
   id: EntityId;
 
-${dbOnlyFields.map(generateField).join('\n\n')}
+${dbFields.map(generateField).join('\n\n')}
 
 ${generateManyToOneDeclarations(manyToOneRelations)}
 
 ${generateOneToManyDeclarations(oneToManyRelations)}
 
-  public async update(input: ${name}CreateInput, context: IRequestContext) {
+  public async update(input: ${name}CreateInput | ${name}EditInput, context: IRequestContext) {
     ${generateDestructureStatement(manyToOneRelations)}
     assign(this, data);
 
 ${manyToOneRelations.map(generateNullableToOneInitialization).join('\n\n')}
-    await update${name}Model(this, input, context);
+
+    // <keep-update-code>
+    // </keep-update-code>
   }
+
+  // <keep-methods>
+  // </keep-methods>
 }
 `);
 }

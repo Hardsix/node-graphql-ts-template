@@ -1,31 +1,53 @@
-// tslint:disable max-line-length
+// tslint:disable max-line-length no-duplicate-imports
 import { assign } from 'lodash';
 import { Field, ID, ObjectType } from 'type-graphql';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { FacebookPageBase } from '../base/FacebookPageBase';
+import { User } from './User';
+
 import { EntityId } from '../EntityId';
 import { FacebookPageCreateInput } from '../inputs/FacebookPageCreateInput';
+import { FacebookPageEditInput } from '../inputs/FacebookPageEditInput';
 import { IRequestContext } from '../IRequestContext';
-import { updateFacebookPageModel } from '../services/facebook-page-services';
-import { User } from './User';
+
+// <keep-imports>
+// </keep-imports>
 
 @Entity()
 @ObjectType()
-export class FacebookPage extends FacebookPageBase {
+export class FacebookPage {
   @Field((type) => ID)
   @PrimaryGeneratedColumn()
   public id: EntityId;
 
-  @ManyToOne((type) => User, (user) => user.facebookPages , {nullable: false, onDelete: 'CASCADE'})
-  @Field((returns) => User , {nullable: false})
+  @Field(() => String)
+  @Column()
+  public pageAccessToken: string;
+
+  @Field(() => Number)
+  @Column({ type: 'bigint' })
+  public pageId: number;
+
+  @Field(() => String, { nullable: true })
+  @Column({ nullable: true, type: 'varchar' })
+  public name?: string | null;
+
+  @ManyToOne((type) => User, (user) => user.facebookPages , { nullable: false, onDelete: 'CASCADE' })
+  @Field((returns) => User , { nullable: false })
   public owner: Promise<User>;
 
-  public async update(input: FacebookPageCreateInput, context: IRequestContext) {
+  public async update(input: FacebookPageCreateInput | FacebookPageEditInput, context: IRequestContext) {
     const { ownerId, ...data } = input;
     assign(this, data);
 
-    this.owner = Promise.resolve(await context.em.findOneOrFail(User, ownerId));
-    await updateFacebookPageModel(this, input, context);
+    if (ownerId) {
+      this.owner = Promise.resolve(await context.em.findOneOrFail(User, ownerId));
+    }
+
+    // <keep-update-code>
+    // </keep-update-code>
   }
+
+  // <keep-methods>
+  // </keep-methods>
 }
