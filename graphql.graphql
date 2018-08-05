@@ -1,3 +1,10 @@
+type FacebookAccount {
+  id: ID!
+  facebookUserId: String!
+  facebookAccessToken: String!
+  user: User!
+}
+
 type FacebookPage {
   id: ID!
   pageAccessToken: String!
@@ -7,6 +14,10 @@ type FacebookPage {
 }
 
 type Mutation {
+  createFacebookAccount(facebookUserId: String!, facebookAccessToken: String!, userId: ID!): FacebookAccount!
+  updateFacebookAccount(facebookUserId: String, facebookAccessToken: String, userId: ID, id: ID!): FacebookAccount!
+  deleteFacebookAccount(id: ID!): Boolean!
+  deleteFacebookAccounts(ids: [ID!]!): Boolean!
   createFacebookPage(pageAccessToken: String!, pageId: Float!, name: String, ownerId: ID!): FacebookPage!
   updateFacebookPage(pageAccessToken: String, pageId: Float, name: String, ownerId: ID, id: ID!): FacebookPage!
   deleteFacebookPage(id: ID!): Boolean!
@@ -15,8 +26,8 @@ type Mutation {
   updatePost(content: String, authorId: ID, id: ID!): Post!
   deletePost(id: ID!): Boolean!
   deletePosts(ids: [ID!]!): Boolean!
-  createUser(password: String!, email: String!, type: UserType!): User!
-  updateUser(password: String, email: String, type: UserType, id: ID!): User!
+  createUser(password: String!, email: String!, type: UserType!, facebookAccountId: ID): User!
+  updateUser(password: String, email: String, type: UserType, facebookAccountId: ID, id: ID!): User!
   deleteUser(id: ID!): Boolean!
   deleteUsers(ids: [ID!]!): Boolean!
 }
@@ -28,6 +39,8 @@ type Post {
 }
 
 type Query {
+  facebookAccount(id: ID!): FacebookAccount!
+  facebookAccounts: [FacebookAccount!]!
   facebookPage(id: ID!): FacebookPage!
   facebookPages: [FacebookPage!]!
   post(id: ID!): Post!
@@ -42,6 +55,7 @@ type User {
   type: UserType!
   facebookPages: [FacebookPage!]!
   posts: [Post!]!
+  facebookAccount: FacebookAccount
 }
 
 enum UserType {

@@ -78,7 +78,9 @@ function convertToSingleRelations(relationDefinition: IRelationDefinition): Arra
     otherName: second.as,
     otherTypeName: first.target,
     relationType: first.type,
+    otherRelationType: second.type,
     optional: first.optional,
+    isFirst: true,
   };
 
   const secondRelation: ISingleErRelation = {
@@ -87,7 +89,9 @@ function convertToSingleRelations(relationDefinition: IRelationDefinition): Arra
     otherName: first.as,
     otherTypeName: second.target,
     relationType: second.type,
+    otherRelationType: first.type,
     optional: second.optional,
+    isFirst: false,
   };
 
   return [firstRelation, secondRelation];

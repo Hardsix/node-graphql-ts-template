@@ -17,6 +17,9 @@ export class UserCreateInput {
   @Field(() => UserType)
   public type: UserType;
 
+  @Field(() => ID, { nullable: true })
+  public facebookAccountId?: EntityId | null;
+
   // <keep-methods>
   // </keep-methods>
 }

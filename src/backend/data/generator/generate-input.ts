@@ -21,7 +21,7 @@ export function generateInput(model: ISingleErModel, type: 'edit' | 'create') {
   const transform = type === 'edit' ? makeOptional : identity;
 
   const inputFields = model.fields.filter((f) => f.visibility !== '+').map(transform);
-  const manyToOneRelations = model.relations.filter((r) => r.relationType === 'one');
+  const manyToOneRelations = model.relations.filter((r) => r.relationType === 'one' && r.otherRelationType === 'many');
   const manyToOneFields = manyToOneRelations.map((r): IFieldDefinition => ({
     dbType: undefined,
     name: `${r.myName}Id`,
@@ -31,7 +31,17 @@ export function generateInput(model: ISingleErModel, type: 'edit' | 'create') {
     modelName: name,
   })).map(transform);
 
-  const allInputFields = [...inputFields, ...manyToOneFields];
+  const oneToOneRelations = model.relations.filter((r) => r.relationType === 'one' && r.otherRelationType === 'one');
+  const oneToOneFields = oneToOneRelations.map((r): IFieldDefinition => ({
+    dbType: undefined,
+    name: `${r.myName}Id`,
+    optional: r.optional || r.isFirst,
+    type: 'EntityId',
+    visibility: '',
+    modelName: name,
+  })).map(transform);
+
+  const allInputFields = [...inputFields, ...manyToOneFields, ...oneToOneFields];
 
   return (
 `import { ArgsType, Field, ID } from 'type-graphql';

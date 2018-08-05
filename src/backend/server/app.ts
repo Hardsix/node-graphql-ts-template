@@ -2,8 +2,9 @@
 import { GraphQLServer, Options } from 'graphql-yoga';
 import * as path from 'path';
 import { buildSchema } from 'type-graphql';
-import { createConnection } from 'typeorm';
+import { createConnection, getManager } from 'typeorm';
 
+import { IRequestContext } from '../data/IRequestContext';
 import { createGraphqlFile, createSchemaJsonFile } from './server-helpers';
 
 async function bootstrap() {
@@ -14,7 +15,16 @@ async function bootstrap() {
   createGraphqlFile(schema);
   await createSchemaJsonFile(schema);
 
-  const server = new GraphQLServer({ schema });
+  const server = new GraphQLServer({
+    schema,
+    context(request, response): IRequestContext {
+      return {
+        em: getManager(),
+        response,
+        request,
+      };
+    },
+  });
   const port = process.env.PORT || 5000;
 
   // Configure server options

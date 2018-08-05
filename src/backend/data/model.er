@@ -4,6 +4,13 @@ User:
   - email
   - type: StandardUser|SuperAdmin|Admin
 
+FacebookAccount:
+  - facebookUserId
+  - facebookAccessToken
+
+User has one FacebookAccount as facebookAccount
+FacebookAccount has one User as user
+
 FacebookPage:
   - pageAccessToken
   - pageId: number bigint

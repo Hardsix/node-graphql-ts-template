@@ -20,7 +20,9 @@ export interface ISingleErRelation {
   myTypeName: string;
   myName: string;
   relationType: string;
+  otherRelationType: string;
   optional: boolean;
+  isFirst: boolean;
 }
 
 export interface ISingleErModel {

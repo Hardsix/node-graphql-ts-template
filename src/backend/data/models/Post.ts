@@ -1,7 +1,7 @@
 // tslint:disable max-line-length no-duplicate-imports
 import { assign } from 'lodash';
 import { Field, ID, ObjectType } from 'type-graphql';
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { User } from './User';
 
