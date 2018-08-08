@@ -1,48 +1,19 @@
-type FacebookAccount {
-  id: ID!
-  facebookUserId: String!
-  facebookAccessToken: String!
-  user: User!
-}
-
-type FacebookPage {
-  id: ID!
-  pageAccessToken: String!
-  pageId: Float!
-  name: String
-  owner: User!
-}
-
 type Mutation {
-  createFacebookAccount(facebookUserId: String!, facebookAccessToken: String!, userId: ID!): FacebookAccount!
-  updateFacebookAccount(facebookUserId: String, facebookAccessToken: String, userId: ID, id: ID!): FacebookAccount!
-  deleteFacebookAccount(id: ID!): Boolean!
-  deleteFacebookAccounts(ids: [ID!]!): Boolean!
-  createFacebookPage(pageAccessToken: String!, pageId: Float!, name: String, ownerId: ID!): FacebookPage!
-  updateFacebookPage(pageAccessToken: String, pageId: Float, name: String, ownerId: ID, id: ID!): FacebookPage!
-  deleteFacebookPage(id: ID!): Boolean!
-  deleteFacebookPages(ids: [ID!]!): Boolean!
-  createPost(content: String!, authorId: ID): Post!
-  updatePost(content: String, authorId: ID, id: ID!): Post!
-  deletePost(id: ID!): Boolean!
+  createPost(content: String!, author: UserNestedInput!): Post!
+  updatePost(id: ID!, content: String, author: UserNestedInput): Post!
   deletePosts(ids: [ID!]!): Boolean!
-  createUser(password: String!, email: String!, type: UserType!, facebookAccountId: ID): User!
-  updateUser(password: String, email: String, type: UserType, facebookAccountId: ID, id: ID!): User!
-  deleteUser(id: ID!): Boolean!
+  createUser(email: String!): User!
+  updateUser(id: ID!, email: String): User!
   deleteUsers(ids: [ID!]!): Boolean!
 }
 
 type Post {
   id: ID!
   content: String!
-  author: User
+  author: User!
 }
 
 type Query {
-  facebookAccount(id: ID!): FacebookAccount!
-  facebookAccounts: [FacebookAccount!]!
-  facebookPage(id: ID!): FacebookPage!
-  facebookPages: [FacebookPage!]!
   post(id: ID!): Post!
   posts: [Post!]!
   user(id: ID!): User!
@@ -52,14 +23,10 @@ type Query {
 type User {
   id: ID!
   email: String!
-  type: UserType!
-  facebookPages: [FacebookPage!]!
   posts: [Post!]!
-  facebookAccount: FacebookAccount
 }
 
-enum UserType {
-  StandardUser
-  SuperAdmin
-  Admin
+input UserNestedInput {
+  id: ID!
+  email: String
 }

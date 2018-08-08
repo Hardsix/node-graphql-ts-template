@@ -1,32 +1,36 @@
 import { identity, upperFirst } from 'lodash';
 import { generateEnumsImports, generateFieldDeco, getFieldName, getTsTypeName } from './generate-base';
-import { IFieldDefinition, ISingleErModel } from './model-types';
+import { IFieldDefinition, ISingleErModel, ISingleErRelation } from './model-types';
 
-function generateField(field: IFieldDefinition) {
+export function generateNestedInputsImports(fields: Array<IFieldDefinition>) {
+  return fields.map((field) => `import { ${field.type} } from './${field.type}'`).join('\n');
+}
+
+export function generateField(field: IFieldDefinition) {
   return (
 `  ${generateFieldDeco(field)}
   public ${getFieldName(field)}: ${getTsTypeName(field)};`);
 }
 
-function makeOptional(field: IFieldDefinition): IFieldDefinition {
+export function makeOptional(field: IFieldDefinition): IFieldDefinition {
   return {
     ...field,
     optional: true,
   };
 }
 
-export function generateInput(model: ISingleErModel, type: 'edit' | 'create') {
+export function generateInput(model: ISingleErModel, type: 'edit' | 'create' | 'nested') {
   const name = model.name;
 
-  const transform = type === 'edit' ? makeOptional : identity;
+  const transform = type === 'edit' || type === 'nested' ? makeOptional : identity;
 
   const inputFields = model.fields.filter((f) => f.visibility !== '+').map(transform);
   const manyToOneRelations = model.relations.filter((r) => r.relationType === 'one' && r.otherRelationType === 'many');
   const manyToOneFields = manyToOneRelations.map((r): IFieldDefinition => ({
     dbType: undefined,
-    name: `${r.myName}Id`,
+    name: r.myName,
     optional: r.optional,
-    type: 'EntityId',
+    type: `${r.otherTypeName}NestedInput`,
     visibility: '',
     modelName: name,
   })).map(transform);
@@ -36,23 +40,38 @@ export function generateInput(model: ISingleErModel, type: 'edit' | 'create') {
     dbType: undefined,
     name: `${r.myName}Id`,
     optional: r.optional || r.isFirst,
-    type: 'EntityId',
+    type: `${r.otherTypeName}NestedInput`,
     visibility: '',
     modelName: name,
   })).map(transform);
 
-  const allInputFields = [...inputFields, ...manyToOneFields, ...oneToOneFields];
+  const idFields: Array<IFieldDefinition> = [];
+  if (type === 'edit' || type === 'nested') {
+    idFields.push({
+      dbType: undefined,
+      name: `id`,
+      optional: false,
+      type: 'EntityId',
+      visibility: '',
+      modelName: name,
+      notNullable: type === 'nested',
+    });
+  }
+
+  const allInputFields = [...idFields, ...inputFields, ...manyToOneFields, ...oneToOneFields];
 
   return (
-`import { ArgsType, Field, ID } from 'type-graphql';
+`import { ArgsType, Field, ID, InputType } from 'type-graphql';
 
 import { EntityId } from '../EntityId';
 ${generateEnumsImports(model.fields)}
+${generateNestedInputsImports(manyToOneFields)}
+${generateNestedInputsImports(oneToOneFields)}
 
 // <keep-imports>
 // </keep-imports>
 
-@ArgsType()
+${type === 'nested' ? '@InputType()' : '@ArgsType()'}
 export class ${name}${upperFirst(type)}Input {
 ${allInputFields.map(generateField).join('\n\n')}
 

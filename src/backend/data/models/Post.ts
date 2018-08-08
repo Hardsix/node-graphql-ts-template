@@ -5,9 +5,11 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGene
 
 import { User } from './User';
 
+import { fixId } from '../../utils/fix-id';
 import { EntityId } from '../EntityId';
 import { PostCreateInput } from '../inputs/PostCreateInput';
 import { PostEditInput } from '../inputs/PostEditInput';
+import { PostNestedInput } from '../inputs/PostNestedInput';
 import { IRequestContext } from '../IRequestContext';
 
 // <keep-imports>
@@ -24,20 +26,31 @@ export class Post {
   @Column()
   public content: string;
 
-  @ManyToOne((type) => User, (user) => user.posts , { nullable: true, onDelete: 'SET NULL' })
-  @Field((returns) => User , { nullable: true })
-  public author: Promise<User | undefined | null>;
+  @ManyToOne((type) => User, (user) => user.posts , { nullable: false, onDelete: 'CASCADE' })
+  @Field((returns) => User , { nullable: false })
+  public author: Promise<User>;
 
-  public async update(input: PostCreateInput | PostEditInput, context: IRequestContext) {
-    const { authorId, ...data } = input;
+  public async update(input: PostCreateInput | PostEditInput | PostNestedInput, context: IRequestContext) {
+    fixId(input);
+    const { author, ...data } = input;
     assign(this, data);
 
-    if (authorId !== undefined) {
-      this.author = Promise.resolve(authorId === null ? null : await context.em.findOneOrFail(User, authorId));
+    if (author === null) {
+      throw new Error('Post.author cannot be null');
+    } else if (author === undefined) {
+      // do nothing
+    } else if (author.id) {
+      this.author = Promise.resolve((await context.em.findOneOrFail(User, author.id)).update(author, context));
+    } else {
+      this.author = Promise.resolve(new User().update(author, context));
     }
+
+    context.modelsToSave = [...(context.modelsToSave || []), this];
 
     // <keep-update-code>
     // </keep-update-code>
+
+    return this;
   }
 
   // <keep-methods>

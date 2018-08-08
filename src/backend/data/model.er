@@ -1,26 +1,8 @@
 User:
-  x password
-  + passwordHash
   - email
-  - type: StandardUser|SuperAdmin|Admin
-
-FacebookAccount:
-  - facebookUserId
-  - facebookAccessToken
-
-User has one FacebookAccount as facebookAccount
-FacebookAccount has one User as user
-
-FacebookPage:
-  - pageAccessToken
-  - pageId: number bigint
-  - name?: string varchar
-
-User has many FacebookPage as facebookPages
-FacebookPage has one User as owner
 
 Post:
   - content
 
 User has many Post as posts
-Post has one User as author?
+Post has one User as author

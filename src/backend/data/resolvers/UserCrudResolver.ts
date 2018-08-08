@@ -27,23 +27,22 @@ export class UserCrudResolver {
     const model = new User();
     await model.update(input, ctx);
 
-    return ctx.em.save(User, model);
+    await ctx.em.save(ctx.modelsToSave);
+
+    return model;
   }
 
   @Mutation((returns) => User)
-  public async updateUser(@Arg('id', () => ID) id: EntityId, @Args() input: UserEditInput, @Ctx() ctx: IRequestContext) {
-    delete input['id']; // because type-graphql injects unneeded id field here
-    const model = await ctx.em.findOneOrFail(User, id);
+  public async updateUser(@Args() input: UserEditInput, @Ctx() ctx: IRequestContext) {
+    const model = await ctx.em.findOneOrFail(User, input.id);
     await model.update(input, ctx);
 
-    return ctx.em.save(User, model);
-  }
+    // <keep-update-code>
+    // </keep-update-code>
 
-  @Mutation((returns) => Boolean)
-  public async deleteUser(@Arg('id', () => ID) id: EntityId, @Ctx() ctx: IRequestContext): Promise<boolean> {
-    await ctx.em.remove(User, ctx.em.create(User, { id }));
+    await ctx.em.save(ctx.modelsToSave);
 
-    return true;
+    return model;
   }
 
   @Mutation((returns) => Boolean)

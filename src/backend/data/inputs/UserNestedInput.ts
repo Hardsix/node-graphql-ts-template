@@ -5,8 +5,8 @@ import { EntityId } from '../EntityId';
 // <keep-imports>
 // </keep-imports>
 
-@ArgsType()
-export class UserEditInput {
+@InputType()
+export class UserNestedInput {
   @Field(() => ID)
   public id: EntityId;
 

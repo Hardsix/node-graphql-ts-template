@@ -5,4 +5,5 @@ export interface IRequestContext {
   em: EntityManager;
   request?: Request;
   response?: Response;
+  modelsToSave?: Array<object>;
 }

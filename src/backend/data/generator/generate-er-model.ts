@@ -89,7 +89,7 @@ export function generateTypesImports(types: Array<string>) {
 }
 
 function getFieldName(relation: ISingleErRelation) {
-  return `${relation.myName}Id`;
+  return relation.myName;
 }
 
 export function generateToOneInitialization(relation: ISingleErRelation) {
@@ -103,15 +103,21 @@ export function generateToOneInitialization(relation: ISingleErRelation) {
 }
 
 export function generateNullableToOneInitialization(relation: ISingleErRelation) {
-  if (!relation.optional) {
-    return generateToOneInitialization(relation);
-  }
+//  if (!relation.optional) {
+//    return generateToOneInitialization(relation);
+//  }
 
   const fieldName = getFieldName(relation);
 
   return (
-`    if (${fieldName} !== undefined) {
-      this.${relation.myName} = Promise.resolve(${fieldName} === null ? null : await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}));
+`    if (${fieldName} === null) {
+      ${relation.optional ? `this.${relation.myName} = Promise.resolve(null);` : `throw new Error('${relation.myTypeName}.${relation.myName} cannot be null')`}
+    } else if (${fieldName} === undefined) {
+      // do nothing
+    } else if (${fieldName}.id) {
+      this.${relation.myName} = Promise.resolve((await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}.id)).update(${fieldName}, context));
+    } else {
+      this.${relation.myName} = Promise.resolve(new ${relation.otherTypeName}().update(${fieldName}, context));
     }
 `
   );
@@ -147,8 +153,10 @@ ${generateTypesImports(types)}
 ${generateEnumsImports(model.fields)}
 import { ${name}CreateInput } from '../inputs/${name}CreateInput';
 import { ${name}EditInput } from '../inputs/${name}EditInput';
+import { ${name}NestedInput } from '../inputs/${name}NestedInput';
 import { IRequestContext } from '../IRequestContext';
 import { EntityId } from '../EntityId';
+import { fixId } from '../../utils/fix-id';
 
 // <keep-imports>
 // </keep-imports>
@@ -169,7 +177,8 @@ ${generateOneToManyDeclarations(oneToManyRelations)}
 ${generateOneToOneOwnerDeclarations(oneToOneOwnerRelations)}
 ${generateOneToOneSecondaryDeclarations(oneToOneSecondaryRelations)}
 
-  public async update(input: ${name}CreateInput | ${name}EditInput, context: IRequestContext) {
+  public async update(input: ${name}CreateInput | ${name}EditInput | ${name}NestedInput, context: IRequestContext) {
+    fixId(input);
     ${generateDestructureStatement([...manyToOneRelations, ...oneToOneOwnerRelations, ...oneToOneSecondaryRelations])}
     assign(this, data);
 
@@ -177,8 +186,12 @@ ${manyToOneRelations.map(generateNullableToOneInitialization).join('\n\n')}
 ${oneToOneOwnerRelations.map(generateNullableToOneInitialization).join('\n\n')}
 ${oneToOneSecondaryRelations.map(generateNullableToOneInitialization).join('\\n\\n')}
 
+    context.modelsToSave = [...(context.modelsToSave || []), this];
+
     // <keep-update-code>
     // </keep-update-code>
+
+    return this;
   }
 
   // <keep-methods>

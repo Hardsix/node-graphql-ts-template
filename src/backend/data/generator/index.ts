@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as makeDir from 'make-dir';
 import * as path from 'path';
 
 import { findBetween, replaceBetween } from '../../utils/find-between';
@@ -40,8 +41,11 @@ const keepingTags = [{
   end: '// </keep-update-code>',
 }];
 
-function writeToFile(data: string, dir: string, name: string, overwrite: boolean) {
-  const filePath = path.join(__dirname, '..', dir, name);
+async function writeToFile(data: string, dir: string, name: string, overwrite: boolean) {
+  const dirName = path.join(__dirname, '..', dir);
+  await makeDir(dirName);
+
+  const filePath = path.join(dirName, name);
 
   if (!overwrite && fs.existsSync(filePath)) {
     // tslint:disable-next-line no-console
@@ -66,22 +70,26 @@ function writeToFile(data: string, dir: string, name: string, overwrite: boolean
   });
 }
 
-for (const model of models) {
-  const createInput = generateInput(model, 'create');
-  const editInput = generateInput(model, 'edit');
-  const dbModel = generateSingleModel(model);
-  const resolver = generateResolver(model);
-  const crudResolver = generateCrudResolver(model);
-  const { name } = model;
+(async () => {
+  for (const model of models) {
+    const createInput = generateInput(model, 'create');
+    const editInput = generateInput(model, 'edit');
+    const nestedInput = generateInput(model, 'nested');
+    const dbModel = generateSingleModel(model);
+    const resolver = generateResolver(model);
+    const crudResolver = generateCrudResolver(model);
+    const { name } = model;
 
-  writeToFile(createInput, 'inputs', `${name}CreateInput.ts`, true);
-  writeToFile(editInput, 'inputs', `${name}EditInput.ts`, true);
-  writeToFile(dbModel, 'models', `${name}.ts`, true);
-  writeToFile(resolver, 'type-resolvers', `${name}Resolver.ts`, false);
-  writeToFile(crudResolver, 'resolvers', `${name}CrudResolver.ts`, true);
+    await writeToFile(createInput, 'inputs', `${name}CreateInput.ts`, true);
+    await writeToFile(editInput, 'inputs', `${name}EditInput.ts`, true);
+    await writeToFile(nestedInput, 'inputs', `${name}NestedInput.ts`, true);
+    await writeToFile(dbModel, 'models', `${name}.ts`, true);
+    await writeToFile(resolver, 'type-resolvers', `${name}Resolver.ts`, false);
+    await writeToFile(crudResolver, 'resolvers', `${name}CrudResolver.ts`, true);
 
-  model.fields.filter(isEnum).forEach((field) => {
-    const enumName = getEnumName(field);
-    writeToFile(generateEnum(model, field), 'enums', `${enumName}.ts`, true);
-  });
-}
+    model.fields.filter(isEnum).forEach(async (field) => {
+      const enumName = getEnumName(field);
+      await writeToFile(generateEnum(model, field), 'enums', `${enumName}.ts`, true);
+    });
+  }
+})();

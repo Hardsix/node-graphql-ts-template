@@ -1,6 +1,8 @@
-import { ArgsType, Field, ID } from 'type-graphql';
+import { ArgsType, Field, ID, InputType } from 'type-graphql';
 
 import { EntityId } from '../EntityId';
+
+import { UserNestedInput } from './UserNestedInput';
 
 // <keep-imports>
 // </keep-imports>
@@ -10,8 +12,8 @@ export class PostCreateInput {
   @Field(() => String)
   public content: string;
 
-  @Field(() => ID, { nullable: true })
-  public authorId?: EntityId | null;
+  @Field(() => UserNestedInput)
+  public author: UserNestedInput;
 
   // <keep-methods>
   // </keep-methods>

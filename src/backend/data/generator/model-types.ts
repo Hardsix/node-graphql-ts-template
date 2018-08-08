@@ -7,6 +7,7 @@ export interface IFieldDefinition {
   dbType: string | undefined;
   optional: boolean;
   modelName: string;
+  notNullable?: boolean;
 }
 
 export interface IModelDefinition {

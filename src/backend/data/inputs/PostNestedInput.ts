@@ -2,16 +2,21 @@ import { ArgsType, Field, ID, InputType } from 'type-graphql';
 
 import { EntityId } from '../EntityId';
 
+import { UserNestedInput } from './UserNestedInput';
+
 // <keep-imports>
 // </keep-imports>
 
-@ArgsType()
-export class UserEditInput {
+@InputType()
+export class PostNestedInput {
   @Field(() => ID)
   public id: EntityId;
 
   @Field(() => String, { nullable: true })
-  public email?: string | null;
+  public content?: string | null;
+
+  @Field(() => UserNestedInput, { nullable: true })
+  public author?: UserNestedInput | null;
 
   // <keep-methods>
   // </keep-methods>

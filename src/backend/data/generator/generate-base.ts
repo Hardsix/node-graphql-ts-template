@@ -22,7 +22,7 @@ export function generateFieldDeco(field: IFieldDefinition) {
 export function getTsTypeName(field: IFieldDefinition) {
   const type = isEnum(field) ? getEnumName(field) : field.type;
 
-  if (field.optional) {
+  if (field.optional && !field.notNullable) {
     return `${type} | null`;
   }
 

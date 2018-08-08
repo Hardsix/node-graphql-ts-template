@@ -27,23 +27,22 @@ export class PostCrudResolver {
     const model = new Post();
     await model.update(input, ctx);
 
-    return ctx.em.save(Post, model);
+    await ctx.em.save(ctx.modelsToSave);
+
+    return model;
   }
 
   @Mutation((returns) => Post)
-  public async updatePost(@Arg('id', () => ID) id: EntityId, @Args() input: PostEditInput, @Ctx() ctx: IRequestContext) {
-    delete input['id']; // because type-graphql injects unneeded id field here
-    const model = await ctx.em.findOneOrFail(Post, id);
+  public async updatePost(@Args() input: PostEditInput, @Ctx() ctx: IRequestContext) {
+    const model = await ctx.em.findOneOrFail(Post, input.id);
     await model.update(input, ctx);
 
-    return ctx.em.save(Post, model);
-  }
+    // <keep-update-code>
+    // </keep-update-code>
 
-  @Mutation((returns) => Boolean)
-  public async deletePost(@Arg('id', () => ID) id: EntityId, @Ctx() ctx: IRequestContext): Promise<boolean> {
-    await ctx.em.remove(Post, ctx.em.create(Post, { id }));
+    await ctx.em.save(ctx.modelsToSave);
 
-    return true;
+    return model;
   }
 
   @Mutation((returns) => Boolean)
