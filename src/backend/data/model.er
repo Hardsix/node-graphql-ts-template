@@ -1,6 +1,12 @@
 User:
   - email
 
+FacebookAccount:
+  - externalUserId
+
+User has one FacebookAccount as facebookAccount
+FacebookAccount has one User as user
+
 Post:
   - content
 

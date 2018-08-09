@@ -9,8 +9,8 @@ import { UserNestedInput } from './UserNestedInput';
 
 @InputType()
 export class PostNestedInput {
-  @Field(() => ID)
-  public id: EntityId;
+  @Field(() => ID, { nullable: true })
+  public id?: EntityId;
 
   @Field(() => String, { nullable: true })
   public content?: string | null;

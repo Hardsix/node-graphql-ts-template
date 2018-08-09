@@ -38,7 +38,7 @@ export function generateInput(model: ISingleErModel, type: 'edit' | 'create' | '
   const oneToOneRelations = model.relations.filter((r) => r.relationType === 'one' && r.otherRelationType === 'one');
   const oneToOneFields = oneToOneRelations.map((r): IFieldDefinition => ({
     dbType: undefined,
-    name: `${r.myName}Id`,
+    name: r.myName,
     optional: r.optional || r.isFirst,
     type: `${r.otherTypeName}NestedInput`,
     visibility: '',
@@ -50,7 +50,7 @@ export function generateInput(model: ISingleErModel, type: 'edit' | 'create' | '
     idFields.push({
       dbType: undefined,
       name: `id`,
-      optional: false,
+      optional: type === 'nested',
       type: 'EntityId',
       visibility: '',
       modelName: name,

@@ -3,6 +3,7 @@ import { assign } from 'lodash';
 import { Field, ID, ObjectType } from 'type-graphql';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+import { FacebookAccount } from './FacebookAccount';
 import { Post } from './Post';
 
 import { fixId } from '../../utils/fix-id';
@@ -30,10 +31,24 @@ export class User {
   @Field((returns) => [Post])
   public posts: Promise<Array<Post>>;
 
+  @OneToOne((type) => FacebookAccount, (facebookAccount) => facebookAccount.user)
+  @Field((returns) => FacebookAccount , { nullable: true })
+  public facebookAccount: Promise<FacebookAccount | undefined | null>;
+
   public async update(input: UserCreateInput | UserEditInput | UserNestedInput, context: IRequestContext) {
     fixId(input);
-    const data = input;
+    const { facebookAccount, ...data } = input;
     assign(this, data);
+
+    if (facebookAccount === null) {
+      throw new Error('User.facebookAccount cannot be null');
+    } else if (facebookAccount === undefined) {
+      // do nothing
+    } else if (facebookAccount.id) {
+      this.facebookAccount = Promise.resolve((await context.em.findOneOrFail(FacebookAccount, facebookAccount.id)).update(facebookAccount, context));
+    } else {
+      this.facebookAccount = Promise.resolve(new FacebookAccount().update(facebookAccount, context));
+    }
 
     context.modelsToSave = [...(context.modelsToSave || []), this];
 

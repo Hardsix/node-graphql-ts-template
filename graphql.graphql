@@ -1,9 +1,24 @@
+type FacebookAccount {
+  id: ID!
+  externalUserId: String!
+  user: User!
+}
+
+input FacebookAccountNestedInput {
+  id: ID
+  externalUserId: String
+  user: UserNestedInput
+}
+
 type Mutation {
+  createFacebookAccount(externalUserId: String!, user: UserNestedInput!): FacebookAccount!
+  updateFacebookAccount(id: ID!, externalUserId: String, user: UserNestedInput): FacebookAccount!
+  deleteFacebookAccounts(ids: [ID!]!): Boolean!
   createPost(content: String!, author: UserNestedInput!): Post!
   updatePost(id: ID!, content: String, author: UserNestedInput): Post!
   deletePosts(ids: [ID!]!): Boolean!
-  createUser(email: String!): User!
-  updateUser(id: ID!, email: String): User!
+  createUser(email: String!, facebookAccount: FacebookAccountNestedInput): User!
+  updateUser(id: ID!, email: String, facebookAccount: FacebookAccountNestedInput): User!
   deleteUsers(ids: [ID!]!): Boolean!
 }
 
@@ -14,6 +29,8 @@ type Post {
 }
 
 type Query {
+  facebookAccount(id: ID!): FacebookAccount!
+  facebookAccounts: [FacebookAccount!]!
   post(id: ID!): Post!
   posts: [Post!]!
   user(id: ID!): User!
@@ -24,9 +41,11 @@ type User {
   id: ID!
   email: String!
   posts: [Post!]!
+  facebookAccount: FacebookAccount
 }
 
 input UserNestedInput {
-  id: ID!
+  id: ID
   email: String
+  facebookAccount: FacebookAccountNestedInput
 }
