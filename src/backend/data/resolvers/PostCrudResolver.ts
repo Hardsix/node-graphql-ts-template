@@ -1,6 +1,7 @@
 // tslint:disable max-line-length
 import { Arg, Args, Ctx, ID, Info, Mutation, Query } from 'type-graphql';
 
+import { addEagerFlags } from '../../utils/add-eager-flags';
 import { getFindOptions } from '../../utils/get-find-options';
 import { EntityId } from '../EntityId';
 import { PostCreateInput } from '../inputs/PostCreateInput';
@@ -14,12 +15,12 @@ import { Post } from '../models/Post';
 export class PostCrudResolver {
   @Query((returns) => Post)
   public async post(@Arg('id', () => ID) id: number, @Info() info, @Ctx() ctx: IRequestContext) {
-    return ctx.em.findOne(Post, id, getFindOptions(Post, info));
+    return addEagerFlags(await ctx.em.findOne(Post, id, getFindOptions(Post, info)));
   }
 
   @Query((returns) => [Post])
-  public posts(@Info() info, @Ctx() ctx: IRequestContext) {
-    return ctx.em.find(Post, getFindOptions(Post, info));
+  public async posts(@Info() info, @Ctx() ctx: IRequestContext) {
+    return addEagerFlags(await ctx.em.find(Post, getFindOptions(Post, info)));
   }
 
   @Mutation((returns) => Post)

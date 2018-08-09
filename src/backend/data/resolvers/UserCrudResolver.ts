@@ -1,6 +1,7 @@
 // tslint:disable max-line-length
 import { Arg, Args, Ctx, ID, Info, Mutation, Query } from 'type-graphql';
 
+import { addEagerFlags } from '../../utils/add-eager-flags';
 import { getFindOptions } from '../../utils/get-find-options';
 import { EntityId } from '../EntityId';
 import { UserCreateInput } from '../inputs/UserCreateInput';
@@ -14,12 +15,12 @@ import { User } from '../models/User';
 export class UserCrudResolver {
   @Query((returns) => User)
   public async user(@Arg('id', () => ID) id: number, @Info() info, @Ctx() ctx: IRequestContext) {
-    return ctx.em.findOne(User, id, getFindOptions(User, info));
+    return addEagerFlags(await ctx.em.findOne(User, id, getFindOptions(User, info)));
   }
 
   @Query((returns) => [User])
-  public users(@Info() info, @Ctx() ctx: IRequestContext) {
-    return ctx.em.find(User, getFindOptions(User, info));
+  public async users(@Info() info, @Ctx() ctx: IRequestContext) {
+    return addEagerFlags(await ctx.em.find(User, getFindOptions(User, info)));
   }
 
   @Mutation((returns) => User)

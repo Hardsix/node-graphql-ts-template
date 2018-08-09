@@ -17,6 +17,8 @@ import { ${modelName}EditInput } from '../inputs/${modelName}EditInput';
 import { getFindOptions } from '../../utils/get-find-options';
 import { EntityId } from '../EntityId';
 import { IRequestContext } from '../IRequestContext';
+import { addEagerFlags } from '../../utils/add-eager-flags';
+
 
 // <keep-imports>
 // </keep-imports>
@@ -25,12 +27,12 @@ import { IRequestContext } from '../IRequestContext';
 export class ${modelName}CrudResolver {
   @Query((returns) => ${modelName})
   async ${resourceName}(@Arg('id', () => ID) id: number, @Info() info, @Ctx() ctx: IRequestContext) {
-    return await ctx.em.findOne(${modelName}, id, getFindOptions(${modelName}, info));
+    return addEagerFlags(await ctx.em.findOne(${modelName}, id, getFindOptions(${modelName}, info)));
   }
 
   @Query((returns) => [${modelName}])
-  ${plural(resourceName)}(@Info() info, @Ctx() ctx: IRequestContext) {
-    return ctx.em.find(${modelName}, getFindOptions(${modelName}, info));
+  async ${plural(resourceName)}(@Info() info, @Ctx() ctx: IRequestContext) {
+    return addEagerFlags(await ctx.em.find(${modelName}, getFindOptions(${modelName}, info)));
   }
 
   @Mutation((returns) => ${modelName})
