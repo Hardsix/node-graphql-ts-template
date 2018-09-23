@@ -1,9 +1,10 @@
 import * as bluebird from 'bluebird';
 import * as fs from 'fs';
+import { kebabCase } from 'lodash';
 import * as makeDir from 'make-dir';
 import * as path from 'path';
 
-import { findBetween, replaceBetween } from '../../utils/find-between';
+import { findBetween, replaceBetween } from '../utils/find-between';
 import { generateAuthChecker } from './generate-auth-checker';
 import { generateCrudResolver } from './generate-crud-resolver';
 import { generateEnum } from './generate-enum';
@@ -92,6 +93,7 @@ function fileToGeneratorContext(dir: string, name: string): IGeneratorContext {
 (async () => {
   for (const model of models) {
     const { name } = model;
+    const moduleName = kebabCase(name);
 
     const createInput = generateInput(model, 'create');
     const editInput = generateInput(model, 'edit');
@@ -101,16 +103,16 @@ function fileToGeneratorContext(dir: string, name: string): IGeneratorContext {
     const crudResolver = generateCrudResolver(model);
     const authChecker = generateAuthChecker(model);
 
-    await writeToFile(createInput, 'inputs', `${name}CreateInput.ts`, true);
-    await writeToFile(editInput, 'inputs', `${name}EditInput.ts`, true);
-    await writeToFile(nestedInput, 'inputs', `${name}NestedInput.ts`, true);
-    await writeToFile(dbModel, 'models', `${name}.ts`, true);
-    await writeToFile(resolver, 'field-resolvers', `${name}Resolver.ts`, false);
-    await writeToFile(crudResolver, 'resolvers', `${name}CrudResolver.ts`, true);
+    await writeToFile(createInput, `${moduleName}/inputs`, `${name}CreateInput.ts`, true);
+    await writeToFile(editInput, `${moduleName}/inputs`, `${name}EditInput.ts`, true);
+    await writeToFile(nestedInput, `${moduleName}/inputs`, `${name}NestedInput.ts`, true);
+    await writeToFile(dbModel, `${moduleName}/model`, `${name}.ts`, true);
+    await writeToFile(resolver, `${moduleName}/resolvers`, `${name}FieldResolvers.ts`, false);
+    await writeToFile(crudResolver, `${moduleName}/resolvers`, `${name}CrudResolvers.ts`, true);
 
     await bluebird.each(model.fields.filter(isEnum), async (field) => {
       const enumName = getEnumName(field);
-      await writeToFile(generateEnum(model, field), 'enums', `${enumName}.ts`, true);
+      await writeToFile(generateEnum(model, field), `${moduleName}/enums`, `${enumName}.ts`, true);
     });
 
     await writeToFile(authChecker, 'auth', `${name}Auth.ts`, false);

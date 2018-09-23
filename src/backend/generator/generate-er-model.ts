@@ -1,7 +1,7 @@
 // tslint:disable max-line-length
 import { kebabCase, lowerFirst, sortedUniq } from 'lodash';
 
-import { asLastArgument, stringifyClean } from '../../utils/stringify-clean';
+import { asLastArgument, stringifyClean } from '../utils/stringify-clean';
 import { generateEnumsImports, generateField } from './generate-base';
 import { IGeneratorContext } from './generator-context';
 import { getEnumName, isEnum, ISingleErModel, ISingleErRelation } from './model-types';
