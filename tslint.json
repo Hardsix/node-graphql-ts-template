@@ -1,5 +1,5 @@
 {
-  "extends": ["@infinumjs/tslint-config/react.json", "tslint-eslint-rules"],
+  "extends": ["@infinumjs/tslint-config/tslint.json", "tslint-eslint-rules"],
   "defaultSeverity": "warning",
   "rules": {
     "object-curly-spacing": true,
@@ -42,11 +42,7 @@
     "no-unnecessary-callback-wrapper": false,
     "no-non-null-assertion": false,
     "import-spacing": false,
-    "member-ordering": false
-  },
-  "linterOptions": {
-    "exclude": [
-      "src/backend/facebook-integration/models/*"
-    ]
+    "member-ordering": false,
+    "jsx-no-lambda": false
   }
 }

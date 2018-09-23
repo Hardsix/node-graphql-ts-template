@@ -1,5 +1,7 @@
 import { upperFirst } from 'lodash';
+import { findBetween, findBetweenReversed } from '../../utils/find-between';
 import { stringifyClean } from '../../utils/stringify-clean';
+import { IGeneratorContext } from './generator-context';
 import { getEnumName, IFieldDefinition, IModelDefinition, isEnum, ISingleErModel } from './model-types';
 
 export function generateFieldDeco(field: IFieldDefinition) {
@@ -44,38 +46,37 @@ export function generateEnumsImports(fields: Array<IFieldDefinition>) {
     .join('\n');
 }
 
-export function generateField(field: IFieldDefinition) {
-  const columnArgs = stringifyClean({
+export const generateField = (ctx: IGeneratorContext) => (field: IFieldDefinition) => {
+  const customColumnArgsContentPart = findBetweenReversed(ctx.existingContent, '@Column', `public ${field.name}`);
+  const customColumnData = (customColumnArgsContentPart && findBetween(
+    customColumnArgsContentPart,
+    '// <custom-column-args>',
+    '// </custom-column-args>',
+  ) || '').trim();
+
+  const columnArgsDefault = stringifyClean({
     nullable: field.optional || undefined,
-    type: field.dbType,
-    enum: isEnum(field) ? getEnumName(field) : undefined,
-  }, ['enum']);
+      type: field.dbType,
+      enum: isEnum(field) ? getEnumName(field) : undefined,
+    },
+    ['enum'],
+  );
+
+  const columnArgsFromCode = customColumnData ? `
+    // <custom-column-args>
+    ${customColumnData}
+    // </custom-column-args>
+` : `
+    // <custom-column-args>
+    // </custom-column-args>
+`;
+
+  const columnArgs = columnArgsDefault ?
+    columnArgsDefault.replace(/}$/, `,${columnArgsFromCode}  }`) :
+    `{${columnArgsFromCode}  }`;
 
   return (
 `  ${generateFieldDeco(field)}
   @Column(${columnArgs})
   public ${getFieldName(field)}: ${getTsTypeName(field)};`);
-}
-
-export function generateBase(model: ISingleErModel) {
-  const baseFields = model.fields.filter((f) => f.visibility === '-');
-
-  return (
-`import { ArgsType, Field, ObjectType } from 'type-graphql';
-import { Column } from 'typeorm';
-
-${generateEnumsImports(model.fields.filter((f) => f.visibility === '-'))}
-
-// <keep-imports>
-// </keep-imports>
-
-@ArgsType()
-@ObjectType()
-export class ${model.name}Base {
-${baseFields.map(generateField).join('\n\n')}
-
-  // <keep-methods>
-  // </keep-methods>
-}
-`);
-}
+};

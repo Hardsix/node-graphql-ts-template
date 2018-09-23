@@ -1,7 +1,4 @@
-export function findBetween(
-  data: string,
-  start: string,
-  end: string) {
+export function findBetween(data: string, start: string, end: string) {
   const startIndex = data.indexOf(start);
   if (startIndex < 0) {
     return undefined;
@@ -9,6 +6,21 @@ export function findBetween(
 
   const endIndex = data.indexOf(end, startIndex);
   if (endIndex < 0) {
+    return undefined;
+  }
+
+  return data.substring(startIndex + start.length, endIndex);
+}
+
+export function findBetweenReversed(data: string, start: string, end: string) {
+  const endIndex = data.indexOf(end);
+  if (endIndex < 0) {
+    return undefined;
+  }
+
+  const dataBeforeEnd = data.substring(0, endIndex);
+  const startIndex = dataBeforeEnd.lastIndexOf(start);
+  if (startIndex < 0) {
     return undefined;
   }
 

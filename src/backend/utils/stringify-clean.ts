@@ -1,9 +1,9 @@
 import * as cleanDeep from 'clean-deep';
 import { isEmpty } from 'lodash';
 
-export function stringifyClean(obj: object, literals: Array<string> = []): string {
+export function stringifyClean(obj: object, literals: Array<string> = [], emptyStringForEmptyObject = true): string {
   const cleaned = cleanDeep(obj);
-  if (isEmpty(cleaned)) {
+  if (isEmpty(cleaned) && emptyStringForEmptyObject) {
     return '';
   }
 

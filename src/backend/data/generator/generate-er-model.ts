@@ -3,6 +3,7 @@ import { kebabCase, lowerFirst, sortedUniq } from 'lodash';
 
 import { asLastArgument, stringifyClean } from '../../utils/stringify-clean';
 import { generateEnumsImports, generateField } from './generate-base';
+import { IGeneratorContext } from './generator-context';
 import { getEnumName, isEnum, ISingleErModel, ISingleErRelation } from './model-types';
 
 export function generateTypeImport(type: string) {
@@ -97,7 +98,7 @@ export function generateToOneInitialization(relation: ISingleErRelation) {
 
   return (
 `    if (${fieldName}) {
-      this.${relation.myName} = Promise.resolve(await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}));
+      this.${relation.myName} = fakePromise(await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}));
     }`
   );
 }
@@ -115,9 +116,10 @@ export function generateNullableToOneInitialization(relation: ISingleErRelation)
     } else if (${fieldName} === undefined) {
       // do nothing
     } else if (${fieldName}.id) {
-      this.${relation.myName} = Promise.resolve((await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}.id)).update(${fieldName}, context));
+      const ${fieldName}Model = await context.em.findOneOrFail(${relation.otherTypeName}, ${fieldName}.id);
+      this.${relation.myName} = fakePromise(await ${fieldName}Model.update(${fieldName}, context));
     } else {
-      this.${relation.myName} = Promise.resolve(new ${relation.otherTypeName}().update(${fieldName}, context));
+      this.${relation.myName} = fakePromise(await new ${relation.otherTypeName}().update(${fieldName}, context));
     }
 `
   );
@@ -132,7 +134,7 @@ export function generateDestructureStatement(relations: Array<ISingleErRelation>
   }
 }
 
-export function generateSingleModel(model: ISingleErModel) {
+export function generateSingleModel(model: ISingleErModel, ctx: IGeneratorContext) {
   const name = model.name;
   const types = sortedUniq(model.relations.map((r) => r.otherTypeName));
 
@@ -151,24 +153,32 @@ import { assign } from 'lodash';
 
 ${generateTypesImports(types)}
 ${generateEnumsImports(model.fields)}
+import * as auth from '../../utils/auth/auth-checkers';
 import { ${name}CreateInput } from '../inputs/${name}CreateInput';
 import { ${name}EditInput } from '../inputs/${name}EditInput';
 import { ${name}NestedInput } from '../inputs/${name}NestedInput';
 import { IRequestContext } from '../IRequestContext';
+import { IAuthorizable } from '../../utils/auth/IAuthorizable';
 import { EntityId } from '../EntityId';
 import { fixId } from '../../utils/fix-id';
+import { ${name}Auth } from '../auth/${name}Auth';
+import { fakePromise } from '../../utils/fake-promise';
 
 // <keep-imports>
 // </keep-imports>
 
+// <keep-decorators>
+// </keep-decorators>
 @Entity()
 @ObjectType()
-export class ${name} {
+export class ${name} implements IAuthorizable {
   @Field((type) => ID)
   @PrimaryGeneratedColumn()
   id: EntityId;
 
-${dbFields.map(generateField).join('\n\n')}
+  public authorizationChecker = new ${name}Auth(this);
+
+${dbFields.map(generateField(ctx)).join('\n\n')}
 
 ${generateManyToOneDeclarations(manyToOneRelations)}
 
@@ -180,6 +190,9 @@ ${generateOneToOneSecondaryDeclarations(oneToOneSecondaryRelations)}
   public async update(input: ${name}CreateInput | ${name}EditInput | ${name}NestedInput, context: IRequestContext) {
     fixId(input);
     ${generateDestructureStatement([...manyToOneRelations, ...oneToOneOwnerRelations, ...oneToOneSecondaryRelations])}
+    if (this.id && 'id' in input && Object.keys(input).length > 1) {
+      await auth.assertCanUpdate(this, context);
+    }
     assign(this, data);
 
 ${manyToOneRelations.map(generateNullableToOneInitialization).join('\n\n')}
@@ -190,6 +203,9 @@ ${oneToOneSecondaryRelations.map(generateNullableToOneInitialization).join('\\n\
 
     // <keep-update-code>
     // </keep-update-code>
+    if (!('id' in input)) {
+      await auth.assertCanCreate(this, context);
+    }
 
     return this;
   }

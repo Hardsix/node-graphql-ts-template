@@ -9,7 +9,7 @@ export function generateCrudResolver(model: ISingleErModel) {
 
   return (
 `// tslint:disable max-line-length
-import { Arg, Args, Mutation, Query, Info, ID, Ctx } from 'type-graphql';
+import { Arg, Args, Mutation, Query, Info, ID, Ctx, Resolver, Root, FieldResolver } from 'type-graphql';
 
 import { ${modelName} } from '../models/${modelName}';
 import { ${modelName}CreateInput } from '../inputs/${modelName}CreateInput';
@@ -18,12 +18,13 @@ import { getFindOptions } from '../../utils/get-find-options';
 import { EntityId } from '../EntityId';
 import { IRequestContext } from '../IRequestContext';
 import { addEagerFlags } from '../../utils/add-eager-flags';
+import * as auth from '../../utils/auth/auth-checkers';
 
 
 // <keep-imports>
 // </keep-imports>
 
-
+@Resolver(${modelName})
 export class ${modelName}CrudResolver {
   @Query((returns) => ${modelName})
   async ${resourceName}(@Arg('id', () => ID) id: number, @Info() info, @Ctx() ctx: IRequestContext) {
@@ -36,7 +37,7 @@ export class ${modelName}CrudResolver {
   }
 
   @Mutation((returns) => ${modelName})
-  async create${modelName}(@Args() input: ${modelName}CreateInput, @Ctx() ctx: IRequestContext): Promise<${modelName}> {
+  async create${modelName}(@Arg('input') input: ${modelName}CreateInput, @Ctx() ctx: IRequestContext): Promise<${modelName}> {
     const model = new ${modelName}();
     await model.update(input, ctx);
 
@@ -46,7 +47,7 @@ export class ${modelName}CrudResolver {
   }
 
   @Mutation((returns) => ${modelName})
-  async update${modelName}(@Args() input: ${modelName}EditInput, @Ctx() ctx: IRequestContext) {
+  async update${modelName}(@Arg('input') input: ${modelName}EditInput, @Ctx() ctx: IRequestContext) {
     const model = await ctx.em.findOneOrFail(${modelName}, input.id);
     await model.update(input, ctx);
 
@@ -60,7 +61,9 @@ export class ${modelName}CrudResolver {
 
   @Mutation((returns) => Boolean)
   async delete${plural(modelName)}(@Arg('ids', () => [ID]) ids: Array<EntityId>, @Ctx() ctx: IRequestContext): Promise<boolean> {
-    await ctx.em.remove(${modelName}, ids.map((id) => ctx.em.create(${modelName}, { id })));
+    const entities = await ctx.em.findByIds(${modelName}, ids);
+    await auth.assertCanDelete(entities, ctx);
+    await ctx.em.remove(entities);
 
     return true;
   }

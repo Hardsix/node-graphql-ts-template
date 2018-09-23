@@ -1,4 +1,4 @@
-export function addEagerFlags(object) {
+export function addEagerFlags<T>(object: T): T {
   if (typeof object !== 'object' || !object) {
     return object;
   }
@@ -8,7 +8,7 @@ export function addEagerFlags(object) {
       object[`__has${key.slice(1)}`] = true;
     }
 
-    if (typeof object[key] === 'object') {
+    if (typeof object[key] === 'object' && object[key] !== null && object[key].id) {
       addEagerFlags(object[key]);
     }
   }

@@ -1,14 +1,31 @@
 User:
-  - email
+  - email?: string varchar
+  + passwordHash?: string varchar
+  x password
+  - firstName
+  - lastName
+  - fullName?: string varchar
+  + role: ADMIN|USER
+  + accountVerificationCode?: string varchar
+  + forgotPasswordCode?: string varchar
+  + googleUserId?: string varchar
+  + googleToken?: string varchar
+  + facebookUserId?: string varchar
+  + facebookAccessToken?: string varchar
 
-FacebookAccount:
-  - externalUserId
-
-User has one FacebookAccount as facebookAccount
-FacebookAccount has one User as user
+File:
+  - contentBase64: string text
+  + slug
 
 Post:
   - content
+  - title
 
 User has many Post as posts
 Post has one User as author
+
+User has one File as profileImage?
+File has one User as user?
+
+Post has many File as images
+File has one Post as post?

@@ -1,7 +1,8 @@
 // tslint:disable max-line-length
-import { Arg, Args, Ctx, ID, Info, Mutation, Query } from 'type-graphql';
+import { Arg, Args, Ctx, FieldResolver, ID, Info, Mutation, Query, Resolver, Root } from 'type-graphql';
 
 import { addEagerFlags } from '../../utils/add-eager-flags';
+import * as auth from '../../utils/auth/auth-checkers';
 import { getFindOptions } from '../../utils/get-find-options';
 import { EntityId } from '../EntityId';
 import { PostCreateInput } from '../inputs/PostCreateInput';
@@ -12,6 +13,7 @@ import { Post } from '../models/Post';
 // <keep-imports>
 // </keep-imports>
 
+@Resolver(Post)
 export class PostCrudResolver {
   @Query((returns) => Post)
   public async post(@Arg('id', () => ID) id: number, @Info() info, @Ctx() ctx: IRequestContext) {
@@ -24,7 +26,7 @@ export class PostCrudResolver {
   }
 
   @Mutation((returns) => Post)
-  public async createPost(@Args() input: PostCreateInput, @Ctx() ctx: IRequestContext): Promise<Post> {
+  public async createPost(@Arg('input') input: PostCreateInput, @Ctx() ctx: IRequestContext): Promise<Post> {
     const model = new Post();
     await model.update(input, ctx);
 
@@ -34,7 +36,7 @@ export class PostCrudResolver {
   }
 
   @Mutation((returns) => Post)
-  public async updatePost(@Args() input: PostEditInput, @Ctx() ctx: IRequestContext) {
+  public async updatePost(@Arg('input') input: PostEditInput, @Ctx() ctx: IRequestContext) {
     const model = await ctx.em.findOneOrFail(Post, input.id);
     await model.update(input, ctx);
 
@@ -48,7 +50,9 @@ export class PostCrudResolver {
 
   @Mutation((returns) => Boolean)
   public async deletePosts(@Arg('ids', () => [ID]) ids: Array<EntityId>, @Ctx() ctx: IRequestContext): Promise<boolean> {
-    await ctx.em.remove(Post, ids.map((id) => ctx.em.create(Post, { id })));
+    const entities = await ctx.em.findByIds(Post, ids);
+    await auth.assertCanDelete(entities, ctx);
+    await ctx.em.remove(entities);
 
     return true;
   }

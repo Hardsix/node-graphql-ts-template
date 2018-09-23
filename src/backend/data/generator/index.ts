@@ -1,13 +1,16 @@
+import * as bluebird from 'bluebird';
 import * as fs from 'fs';
 import * as makeDir from 'make-dir';
 import * as path from 'path';
 
 import { findBetween, replaceBetween } from '../../utils/find-between';
+import { generateAuthChecker } from './generate-auth-checker';
 import { generateCrudResolver } from './generate-crud-resolver';
 import { generateEnum } from './generate-enum';
 import { generateSingleModel } from './generate-er-model';
+import { generateFieldResolver } from './generate-field-resolver';
 import { generateInput } from './generate-input';
-import { generateResolver } from './generate-resolver';
+import { IGeneratorContext } from './generator-context';
 import { getEnumName, isEnum } from './model-types';
 import { parseErModel } from './parse-er-model';
 
@@ -39,6 +42,9 @@ const keepingTags = [{
 }, {
   start: '// <keep-update-code>',
   end: '// </keep-update-code>',
+}, {
+  start: '// <keep-decorators>',
+  end: '// </keep-decorators>',
 }];
 
 async function writeToFile(data: string, dir: string, name: string, overwrite: boolean) {
@@ -49,7 +55,7 @@ async function writeToFile(data: string, dir: string, name: string, overwrite: b
 
   if (!overwrite && fs.existsSync(filePath)) {
     // tslint:disable-next-line no-console
-    console.log(`skipping ${name} because it already exists`);
+    console.info(`skipping ${name} because it already exists`);
 
     return;
   }
@@ -70,26 +76,43 @@ async function writeToFile(data: string, dir: string, name: string, overwrite: b
   });
 }
 
+function fileToGeneratorContext(dir: string, name: string): IGeneratorContext {
+  const dirName = path.join(__dirname, '..', dir);
+  const filePath = path.join(dirName, name);
+  let existingContent;
+  try {
+    existingContent = fs.readFileSync(filePath, 'utf8');
+  } catch (e) {
+    existingContent = '';
+  }
+
+  return { existingContent };
+}
+
 (async () => {
   for (const model of models) {
+    const { name } = model;
+
     const createInput = generateInput(model, 'create');
     const editInput = generateInput(model, 'edit');
     const nestedInput = generateInput(model, 'nested');
-    const dbModel = generateSingleModel(model);
-    const resolver = generateResolver(model);
+    const dbModel = generateSingleModel(model, fileToGeneratorContext('models', `${name}.ts`));
+    const resolver = generateFieldResolver(model);
     const crudResolver = generateCrudResolver(model);
-    const { name } = model;
+    const authChecker = generateAuthChecker(model);
 
     await writeToFile(createInput, 'inputs', `${name}CreateInput.ts`, true);
     await writeToFile(editInput, 'inputs', `${name}EditInput.ts`, true);
     await writeToFile(nestedInput, 'inputs', `${name}NestedInput.ts`, true);
     await writeToFile(dbModel, 'models', `${name}.ts`, true);
-    await writeToFile(resolver, 'type-resolvers', `${name}Resolver.ts`, false);
+    await writeToFile(resolver, 'field-resolvers', `${name}Resolver.ts`, false);
     await writeToFile(crudResolver, 'resolvers', `${name}CrudResolver.ts`, true);
 
-    model.fields.filter(isEnum).forEach(async (field) => {
+    await bluebird.each(model.fields.filter(isEnum), async (field) => {
       const enumName = getEnumName(field);
       await writeToFile(generateEnum(model, field), 'enums', `${enumName}.ts`, true);
     });
+
+    await writeToFile(authChecker, 'auth', `${name}Auth.ts`, false);
   }
 })();
