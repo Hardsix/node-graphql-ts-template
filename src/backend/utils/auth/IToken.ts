@@ -1,4 +1,4 @@
-import { UserRole } from '../../data/enums/UserRole';
+import { UserRole } from '../../modules/user/enums/UserRole';
 
 export interface ITokenUser {
   id: number;

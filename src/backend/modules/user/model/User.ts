@@ -3,22 +3,22 @@ import { assign } from 'lodash';
 import { Field, ID, ObjectType } from 'type-graphql';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-import * as auth from '../../utils/auth/auth-checkers';
-import { IAuthorizable } from '../../utils/auth/IAuthorizable';
-import { fakePromise } from '../../utils/fake-promise';
-import { fixId } from '../../utils/fix-id';
+import * as auth from '../../../utils/auth/auth-checkers';
+import { IAuthorizable } from '../../../utils/auth/IAuthorizable';
+import { fakePromise } from '../../../utils/fake-promise';
+import { fixId } from '../../../utils/fix-id';
 import { UserAuth } from '../auth/UserAuth';
-import { EntityId } from '../EntityId';
+import { EntityId } from '../../../data/EntityId';
 import { UserRole } from '../enums/UserRole';
 import { UserCreateInput } from '../inputs/UserCreateInput';
 import { UserEditInput } from '../inputs/UserEditInput';
 import { UserNestedInput } from '../inputs/UserNestedInput';
-import { IRequestContext } from '../IRequestContext';
-import { File } from './File';
-import { Post } from './Post';
+import { IRequestContext } from '../../../data/IRequestContext';
+import { File } from '../../../data/models/File';
+import { Post } from '../../../data/models/Post';
 
 // <keep-imports>
-import { hashPassword, verifyPassword } from '../../utils/crypto';
+import { hashPassword, verifyPassword } from '../../../utils/crypto';
 // </keep-imports>
 
 // <keep-decorators>

@@ -3,7 +3,7 @@ import { Field, ID, InputType } from 'type-graphql';
 import { EntityId } from '../EntityId';
 
 import { PostNestedInput } from './PostNestedInput';
-import { UserNestedInput } from './UserNestedInput';
+import { UserNestedInput } from '../../modules/user/inputs/UserNestedInput';
 
 // <keep-imports>
 // </keep-imports>

@@ -1,9 +1,9 @@
 import { Field, ID, InputType } from 'type-graphql';
 
-import { EntityId } from '../EntityId';
+import { EntityId } from '../../../data/EntityId';
 import { UserRole } from '../enums/UserRole';
 
-import { FileNestedInput } from './FileNestedInput';
+import { FileNestedInput } from '../../../data/inputs/FileNestedInput';
 
 // <keep-imports>
 // </keep-imports>

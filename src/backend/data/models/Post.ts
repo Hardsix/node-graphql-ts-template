@@ -4,7 +4,7 @@ import { Field, ID, ObjectType } from 'type-graphql';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { File } from './File';
-import { User } from './User';
+import { User } from '../../modules/user/model/User';
 
 import * as auth from '../../utils/auth/auth-checkers';
 import { IAuthorizable } from '../../utils/auth/IAuthorizable';

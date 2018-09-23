@@ -1,20 +1,20 @@
 // tslint:disable max-line-length
 import { Arg, Args, Ctx, FieldResolver, ID, Info, Mutation, Query, Resolver, Root } from 'type-graphql';
 
-import { addEagerFlags } from '../../utils/add-eager-flags';
-import * as auth from '../../utils/auth/auth-checkers';
-import { getFindOptions } from '../../utils/get-find-options';
-import { EntityId } from '../EntityId';
+import { addEagerFlags } from '../../../utils/add-eager-flags';
+import * as auth from '../../../utils/auth/auth-checkers';
+import { getFindOptions } from '../../../utils/get-find-options';
+import { EntityId } from '../../../data/EntityId';
 import { UserCreateInput } from '../inputs/UserCreateInput';
 import { UserEditInput } from '../inputs/UserEditInput';
-import { IRequestContext } from '../IRequestContext';
-import { User } from '../models/User';
+import { IRequestContext } from '../../../data/IRequestContext';
+import { User } from '../model/User';
 
 // <keep-imports>
 // </keep-imports>
 
 @Resolver(User)
-export class UserCrudResolver {
+export class UserCrudResolvers {
   @Query((returns) => User)
   public async user(@Arg('id', () => ID) id: number, @Info() info, @Ctx() ctx: IRequestContext) {
     return addEagerFlags(await ctx.em.findOne(User, id, getFindOptions(User, info)));

@@ -1,10 +1,10 @@
 import { Ctx, FieldResolver, Resolver, Root } from 'type-graphql';
 
-import { IRequestContext } from '../IRequestContext';
-import { User } from '../models/User';
+import { IRequestContext } from '../../../data/IRequestContext';
+import { User } from '../model/User';
 
 @Resolver(User)
-export class UserResolver {
+export class UserFieldResolvers {
   @FieldResolver((returns) => String)
   public async fullName(
     @Root() user: User,

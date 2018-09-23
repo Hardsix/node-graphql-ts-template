@@ -5,7 +5,7 @@ import { ValidationError } from '../../server/validation-error';
 import { generateCode, hashPassword, signUserToken } from '../../utils/crypto';
 import { LoginResponse } from '../custom-types/LoginResponse';
 import { IRequestContext } from '../IRequestContext';
-import { User } from '../models/User';
+import { User } from '../../modules/user/model/User';
 
 @Resolver()
 export class RecoveryResolver {

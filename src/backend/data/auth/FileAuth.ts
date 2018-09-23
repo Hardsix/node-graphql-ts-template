@@ -1,5 +1,5 @@
 import { IAuthorizationChecker } from '../../utils/auth/IAuthorizationChecker';
-import { UserRole } from '../enums/UserRole';
+import { UserRole } from '../../modules/user/enums/UserRole';
 import { IRequestContext } from '../IRequestContext';
 import { File } from '../models/File';
 

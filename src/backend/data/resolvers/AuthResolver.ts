@@ -8,9 +8,9 @@ import { socialLogin } from '../../utils/social-login';
 import { IFacebookApiResponse } from '../custom-types/IFacebookApiResponse';
 import { IGoogleApiResponse } from '../custom-types/IGoogleApiResponse';
 import { LoginResponse } from '../custom-types/LoginResponse';
-import { UserCreateInput } from '../inputs/UserCreateInput';
+import { UserCreateInput } from '../../modules/user/inputs/UserCreateInput';
 import { IRequestContext } from '../IRequestContext';
-import { User } from '../models/User';
+import { User } from '../../modules/user/model/User';
 
 @Resolver()
 export class AuthResolver {

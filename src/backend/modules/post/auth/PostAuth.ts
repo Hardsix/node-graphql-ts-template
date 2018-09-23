@@ -1,23 +1,14 @@
 import { IAuthorizationChecker } from '../../utils/auth/IAuthorizationChecker';
-import { UserRole } from '../enums/UserRole';
+import { UserRole } from '../../modules/user/enums/UserRole';
 import { IRequestContext } from '../IRequestContext';
-import { User } from '../models/User';
+import { Post } from '../models/Post';
 
-export class UserAuth implements IAuthorizationChecker {
-  public constructor(private user: User) {
+export class PostAuth implements IAuthorizationChecker {
+  public constructor(private post: Post) {
   }
 
-  public async canRead(ctx: IRequestContext, field: string) {
-    const { auth } = ctx;
-    if (field !== 'email') {
-      return true;
-    }
-
-    if (!auth) {
-      return false;
-    }
-
-    return auth.user.role === UserRole.ADMIN || auth.user.id === this.user.id;
+  public async canRead(ctx: IRequestContext, field?: string) {
+    return true;
   }
 
   public async canManage(ctx: IRequestContext) {
@@ -30,11 +21,11 @@ export class UserAuth implements IAuthorizationChecker {
       return true;
     }
 
-    return auth.user.id === this.user.id;
+    return false;
   }
 
   public async canCreate(ctx: IRequestContext) {
-    return true;
+    return this.canManage(ctx);
   }
 
   public async canUpdate(ctx: IRequestContext) {
