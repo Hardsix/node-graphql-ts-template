@@ -1,36 +1,88 @@
-type FacebookAccount {
+type File {
   id: ID!
-  externalUserId: String!
-  user: User!
+  contentBase64: String!
+  post: Post
+  user: User
+  url: String!
+  thumbUrl: String!
 }
 
-input FacebookAccountNestedInput {
-  id: ID
-  externalUserId: String
+input FileCreateInput {
+  contentBase64: String!
+  post: PostNestedInput
   user: UserNestedInput
 }
 
+input FileEditInput {
+  id: ID!
+  contentBase64: String
+  post: PostNestedInput
+  user: UserNestedInput
+}
+
+input FileNestedInput {
+  id: ID
+  contentBase64: String
+  post: PostNestedInput
+  user: UserNestedInput
+}
+
+type LoginResponse {
+  token: String!
+  user: User!
+}
+
 type Mutation {
-  createFacebookAccount(externalUserId: String!, user: UserNestedInput!): FacebookAccount!
-  updateFacebookAccount(id: ID!, externalUserId: String, user: UserNestedInput): FacebookAccount!
-  deleteFacebookAccounts(ids: [ID!]!): Boolean!
-  createPost(content: String!, author: UserNestedInput!): Post!
-  updatePost(id: ID!, content: String, author: UserNestedInput): Post!
+  emailRegister(input: UserCreateInput!): LoginResponse!
+  emailLogin(password: String!, email: String!): LoginResponse!
+  logout: Boolean!
+  facebookLogin(facebookAccessToken: String!): String!
+  googleLogin(googleAccessToken: String!): String!
+  createFile(input: FileCreateInput!): File!
+  updateFile(input: FileEditInput!): File!
+  deleteFiles(ids: [ID!]!): Boolean!
+  createPost(input: PostCreateInput!): Post!
+  updatePost(input: PostEditInput!): Post!
   deletePosts(ids: [ID!]!): Boolean!
-  createUser(email: String!, facebookAccount: FacebookAccountNestedInput): User!
-  updateUser(id: ID!, email: String, facebookAccount: FacebookAccountNestedInput): User!
+  forgotPassword(email: String!): Boolean!
+  resetPassword(newPassword: String!, forgotPasswordCode: String!): LoginResponse!
+  changePassword(newPassword: String!, oldPassword: String!): Boolean!
+  createUser(input: UserCreateInput!): User!
+  updateUser(input: UserEditInput!): User!
   deleteUsers(ids: [ID!]!): Boolean!
 }
 
 type Post {
   id: ID!
   content: String!
+  title: String!
   author: User!
+  images: [File!]!
+}
+
+input PostCreateInput {
+  content: String!
+  title: String!
+  author: UserNestedInput!
+}
+
+input PostEditInput {
+  id: ID!
+  content: String
+  title: String
+  author: UserNestedInput
+}
+
+input PostNestedInput {
+  id: ID
+  content: String
+  title: String
+  author: UserNestedInput
 }
 
 type Query {
-  facebookAccount(id: ID!): FacebookAccount!
-  facebookAccounts: [FacebookAccount!]!
+  file(id: ID!): File!
+  files: [File!]!
   post(id: ID!): Post!
   posts: [Post!]!
   user(id: ID!): User!
@@ -39,13 +91,39 @@ type Query {
 
 type User {
   id: ID!
-  email: String!
+  email: String
+  firstName: String!
+  lastName: String!
+  fullName: String
   posts: [Post!]!
-  facebookAccount: FacebookAccount
+  profileImage: File
+}
+
+input UserCreateInput {
+  email: String
+  password: String!
+  firstName: String!
+  lastName: String!
+  fullName: String
+  profileImage: FileNestedInput
+}
+
+input UserEditInput {
+  id: ID!
+  email: String
+  password: String
+  firstName: String
+  lastName: String
+  fullName: String
+  profileImage: FileNestedInput
 }
 
 input UserNestedInput {
   id: ID
   email: String
-  facebookAccount: FacebookAccountNestedInput
+  password: String
+  firstName: String
+  lastName: String
+  fullName: String
+  profileImage: FileNestedInput
 }
