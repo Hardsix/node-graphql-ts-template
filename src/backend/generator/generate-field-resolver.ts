@@ -7,7 +7,7 @@ export function generateFieldResolver(model: ISingleErModel) {
 import { ${model.name} } from '../models/${model.name}';
 
 @Resolver(${model.name})
-export class ${model.name}Resolver {
+export class ${model.name}Resolvers {
 }
 `);
 }

@@ -115,6 +115,6 @@ function fileToGeneratorContext(dir: string, name: string): IGeneratorContext {
       await writeToFile(generateEnum(model, field), `${moduleName}/enums`, `${enumName}.ts`, true);
     });
 
-    await writeToFile(authChecker, 'auth', `${name}Auth.ts`, false);
+    await writeToFile(authChecker, `${moduleName}/auth`, `${name}Auth.ts`, false);
   }
 })();

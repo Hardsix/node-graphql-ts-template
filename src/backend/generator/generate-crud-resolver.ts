@@ -25,7 +25,7 @@ import * as auth from '../../utils/auth/auth-checkers';
 // </keep-imports>
 
 @Resolver(${modelName})
-export class ${modelName}CrudResolver {
+export class ${modelName}CrudResolvers {
   @Query((returns) => ${modelName})
   async ${resourceName}(@Arg('id', () => ID) id: number, @Info() info, @Ctx() ctx: IRequestContext) {
     return addEagerFlags(await ctx.em.findOne(${modelName}, id, getFindOptions(${modelName}, info)));

@@ -1,6 +1,6 @@
 import { upperFirst } from 'lodash';
-import { findBetween, findBetweenReversed } from '../../utils/find-between';
-import { stringifyClean } from '../../utils/stringify-clean';
+import { findBetween, findBetweenReversed } from '../utils/find-between';
+import { stringifyClean } from '../utils/stringify-clean';
 import { IGeneratorContext } from './generator-context';
 import { getEnumName, IFieldDefinition, IModelDefinition, isEnum, ISingleErModel } from './model-types';
 

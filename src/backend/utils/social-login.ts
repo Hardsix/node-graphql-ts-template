@@ -1,5 +1,5 @@
-import { IRequestContext } from '../data/IRequestContext';
-import { User } from '../modules/user/model/User';
+import { IRequestContext } from '../../data/IRequestContext';
+import { User } from '../user/User';
 import { signUserToken } from './crypto';
 
 type LoginType = 'facebook' | 'google';

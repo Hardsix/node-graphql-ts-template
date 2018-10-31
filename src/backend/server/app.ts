@@ -10,9 +10,9 @@ import * as Raven from 'raven';
 import { buildSchema } from 'type-graphql';
 import { createConnection, getConnection } from 'typeorm';
 
-import { IRequestContext } from '../data/IRequestContext';
-import { AuthorizationMiddleware } from '../utils/auth/AuthorizationMiddleware';
-import { IToken } from '../utils/auth/IToken';
+import { IRequestContext } from '../../data/IRequestContext';
+import { AuthorizationMiddleware } from '../auth/AuthorizationMiddleware';
+import { IToken } from '../auth/IToken';
 import config from './config';
 import { formatError, ravenMiddleware } from './format-error';
 import { createGraphqlFile, createSchemaJsonFile } from './server-helpers';

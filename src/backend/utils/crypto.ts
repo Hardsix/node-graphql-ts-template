@@ -1,8 +1,8 @@
 import { compare, hash } from 'bcryptjs';
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'src/backend/utils/crypto';
 import { sign } from 'jsonwebtoken';
 
-import { User } from '../modules/user/model/User';
+import { User } from '../user/User';
 import config from '../server/config';
 
 export async function hashPassword(password: string): Promise<string> {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 
-import { File } from '../data/models/File';
+import { File } from '../../data/models/File';
 
 export function isDevEnv() {
   return process.env.NODE_ENV === undefined || process.env.NODE_ENV === 'development';

@@ -1,6 +1,6 @@
 import { formatError as defaultFormatError } from 'graphql';
 import { captureException, setContext } from 'raven';
-import { IRequestContext } from '../data/IRequestContext';
+import { IRequestContext } from '../../data/IRequestContext';
 
 export function formatError(error) {
   const result = defaultFormatError(error);
